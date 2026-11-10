@@ -1,23 +1,33 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Sun, Moon } from "lucide-react"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Sun, Moon, LayoutDashboard } from "lucide-react";
+import { Navbar } from "./Navbar";
+import { useAuthStore } from "@/stores/auth-store";
 
 export const Header = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const pathname = usePathname();
+
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     if (isDarkMode) {
-      document.documentElement.classList.add("dark")
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove("dark")
+      document.documentElement.classList.remove("dark");
     }
-  }, [isDarkMode])
+  }, [isDarkMode]);
 
   const toggleTheme = () => {
-    setIsDarkMode((prev) => !prev)
-  }
+    setIsDarkMode((prev) => !prev);
+  };
+
+  const showLoginButton = !isAuthenticated && pathname !== "/auth/login";
+  const showDashboardButton =
+    isAuthenticated && !pathname.startsWith("/dashboard");
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/85 backdrop-blur-md transition-colors">
@@ -44,7 +54,7 @@ export const Header = () => {
           </div>
         </Link>
 
-        {/* Actions Header: Selector de tema y Botón Login */}
+        {/* Actions Header: Selector de tema, Botón Dashboard y Botón Login */}
         <div className="flex items-center gap-4">
           <button
             onClick={toggleTheme}
@@ -58,15 +68,29 @@ export const Header = () => {
               <Moon className="h-4 w-4 text-slate-700" />
             )}
           </button>
-          <Link
-            href={`/auth/login`}
 
-            className="cursor-pointer rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/25 transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 active:scale-95"
-          >
-            Iniciar Sesión
-          </Link>
+          {isAuthenticated && <Navbar />}
+
+          {showDashboardButton && (
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 cursor-pointer rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/25 transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 active:scale-95"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </Link>
+          )}
+
+          {showLoginButton && (
+            <Link
+              href="/auth/login"
+              className="cursor-pointer rounded-xl bg-linear-to-r from-blue-600 to-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-blue-600/25 transition-all duration-200 hover:from-blue-700 hover:to-indigo-700 active:scale-95"
+            >
+              Iniciar Sesión
+            </Link>
+          )}
         </div>
       </div>
     </header>
-  )
-}
+  );
+};

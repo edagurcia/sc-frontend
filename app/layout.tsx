@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import { QueryProvider } from "@/providers/query-provider";
 import { Geist_Mono, Outfit, Inter } from "next/font/google";
+import { Toaster } from "sonner";
 
-import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+
+import "./globals.css";
 
 const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" });
 
@@ -85,13 +88,20 @@ export default function RootLayout({
       )}
     >
       <body className="flex min-h-screen flex-col bg-background font-sans text-foreground">
-        <Header />
+        <QueryProvider>
+          <Header />
+          <div className="flex flex-1 flex-col">
+            <ThemeProvider>{children}</ThemeProvider>
+          </div>
+          <Footer />
+        </QueryProvider>
 
-        <div className="flex flex-1 flex-col">
-          <ThemeProvider>{children}</ThemeProvider>
-        </div>
-
-        <Footer />
+        <Toaster
+          position="top-right"
+          expand={true}
+          closeButton={true}
+          theme="system"
+        />
       </body>
     </html>
   );
