@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Sun, Moon, LayoutDashboard } from "lucide-react";
 import { Navbar } from "./Navbar";
 import { useAuthStore } from "@/stores/auth-store";
+import { ThemeToggle } from "./ThemeToggle";
 
 export const Header = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -56,18 +57,7 @@ export const Header = () => {
 
         {/* Actions Header: Selector de tema, Botón Dashboard y Botón Login */}
         <div className="flex items-center gap-4">
-          <button
-            onClick={toggleTheme}
-            className="cursor-pointer rounded-xl border border-border bg-card p-2.5 text-foreground shadow-sm transition-all duration-200 hover:bg-accent"
-            title="Cambiar tema Light / Dark"
-            aria-label="Toggle tema"
-          >
-            {isDarkMode ? (
-              <Sun className="h-4 w-4 text-amber-400" />
-            ) : (
-              <Moon className="h-4 w-4 text-slate-700" />
-            )}
-          </button>
+          <ThemeToggle />
 
           {isAuthenticated && <Navbar />}
 

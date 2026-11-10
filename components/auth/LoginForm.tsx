@@ -13,6 +13,7 @@ import { useAuthStore } from "@/stores";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
+import { UserRole } from "@/data/menu";
 
 export const LoginForm = ({
   className,
@@ -29,7 +30,6 @@ export const LoginForm = ({
     resolver: zodResolver(loginSchema),
   });
 
-  // Integración directa con TanStack Query
   const { mutate: login, isPending } = useMutation({
     mutationFn: async (values: LoginInput) => {
       const res = await loginAction(values);
@@ -38,7 +38,10 @@ export const LoginForm = ({
     },
     onSuccess: (data) => {
       if (data.user) {
-        setUser(data.user);
+        setUser({
+          ...data.user,
+          role: data.user.role as UserRole,
+        });
         toast.success("¡Bienvenido de vuelta!");
         router.push("/dashboard");
       }

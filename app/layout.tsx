@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { QueryProvider } from "@/providers/query-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 import { Geist_Mono, Outfit, Inter } from "next/font/google";
 import { Toaster } from "sonner";
 
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { cn } from "@/lib/utils";
 
 import { Header } from "@/components/layout/Header";
