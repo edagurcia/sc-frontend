@@ -21,14 +21,32 @@ const fontMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://smartcommunity.app",
+  ),
   title:
     "SmartCommunity | Plataforma SaaS de Gestión, Cobros y Seguridad Comunitarios",
   description:
     "Plataforma integral para residenciales y condominios. Control de visitas con soporte delivery (PedidosYa), dashboard de garita, anuncios de la directiva y cobros automatizados.",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      {
+        url: "/logo.png",
+        type: "image/png",
+      },
+    ],
+    shortcut: [
+      {
+        url: "/logo.png",
+        type: "image/png",
+      },
+    ],
+    apple: [
+      {
+        url: "/logo.png",
+        type: "image/png",
+      },
+    ],
   },
   keywords: [
     "SmartCommunity",
@@ -87,6 +105,11 @@ export default function RootLayout({
         interHeading.variable,
       )}
     >
+      <head>
+        <link rel="icon" href="/logo.png" type="image/png" />
+        <link rel="shortcut icon" href="/logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo.png" type="image/png" />
+      </head>
       <body className="flex min-h-screen flex-col bg-background font-sans text-foreground">
         <QueryProvider>
           <Header />
