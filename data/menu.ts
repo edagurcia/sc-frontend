@@ -1,4 +1,4 @@
-export type UserRole = "super_admin" | "community_admin" | "guard" | "resident";
+import type { UserRole } from "@/types";
 
 export type TMenu = {
   id: number;

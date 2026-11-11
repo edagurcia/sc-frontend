@@ -3,20 +3,31 @@
 import { cookies } from "next/headers";
 import { loginSchema, LoginInput } from "@/schemas";
 
+interface Community {
+  id: string;
+  name: string;
+  department: string;
+  municipality: string;
+  address: string;
+  polygon: string | null;
+  isActive: boolean;
+}
+
 interface AuthResponse {
   message: string;
-  token: string;
+  token?: string;
   user: {
     id: string;
     name: string;
     email: string;
     role: string;
     communityId: string | null;
+    isActive?: boolean;
   };
+  community: Community | null;
 }
 
 export async function loginAction(values: LoginInput) {
-  // 1. Validar los datos con Zod en el servidor
   const validatedFields = loginSchema.safeParse(values);
 
   if (!validatedFields.success) {
@@ -40,25 +51,68 @@ export async function loginAction(values: LoginInput) {
     if (!response.ok) {
       return {
         success: false,
-        error: data.message || "Error al iniciar sesión",
+        error: (data as any).error || data.message || "Error al iniciar sesión",
       };
     }
 
-    // 2. Guardar el token de forma segura en una Cookie HTTP-only
-    const cookieStore = await cookies();
-    cookieStore.set({
-      name: "auth_token",
-      value: data.token,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 1 semana
-    });
+    if (data.token) {
+      const cookieStore = await cookies();
+      cookieStore.set({
+        name: "auth_token",
+        value: data.token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7, // 1 semana
+      });
+    }
 
-    return { success: true, user: data.user };
+    return {
+      success: true,
+      user: data.user,
+      community: data.community,
+    };
   } catch (error) {
     console.error("Error en loginAction:", error);
+    return { success: false, error: "Error de conexión con el servidor" };
+  }
+}
+
+// 3. Aplicando la misma interfaz al check de sesión
+export async function checkAuthStatusAction() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("auth_token")?.value;
+
+  if (!token) {
+    return { success: false, error: "No hay sesión activa" };
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/check-status`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    const data: AuthResponse = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: "Sesión inválida" };
+    }
+
+    return {
+      success: true,
+      user: data.user,
+      community: data.community,
+    };
+  } catch (error) {
+    console.error("Error en checkAuthStatusAction:", error);
     return { success: false, error: "Error de conexión con el servidor" };
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -14,13 +15,15 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { UserRole } from "@/data/menu";
+import { Eye, EyeOff } from "lucide-react";
 
 export const LoginForm = ({
   className,
   ...props
 }: React.ComponentProps<"form">) => {
   const router = useRouter();
-  const setUser = useAuthStore((state) => state.setUser);
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -38,10 +41,13 @@ export const LoginForm = ({
     },
     onSuccess: (data) => {
       if (data.user) {
-        setUser({
-          ...data.user,
-          role: data.user.role as UserRole,
-        });
+        setAuth(
+          {
+            ...data.user,
+            role: data.user.role as UserRole,
+          },
+          data.community ?? null,
+        );
         toast.success("¡Bienvenido de vuelta!");
         router.push("/dashboard");
       }
@@ -99,12 +105,31 @@ export const LoginForm = ({
                   ¿Olvidó su contraseña?
                 </a>
               </div>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                {...register("password")}
-              />
+
+              {/* Contenedor relativo para posicionar el botón de forma elegante */}
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="***********"
+                  autoComplete="current-password"
+                  className="pr-10" // Espacio a la derecha para que el texto no choque con el icono
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none"
+                  tabIndex={-1} // Evita que se seleccione al navegar con Tab si se prefiere
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+
               {errors.password && (
                 <span className="text-xs text-destructive">
                   {errors.password.message}
