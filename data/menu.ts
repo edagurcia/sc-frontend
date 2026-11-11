@@ -1,13 +1,4 @@
-import type { UserRole } from "@/types";
-
-export type TMenu = {
-  id: number;
-  label: string;
-  href: string;
-  icon: string;
-  roles: UserRole[];
-  isMenuOption: boolean;
-};
+import type { TMenu } from "@/types";
 
 export const menuOptions: TMenu[] = [
   // --- GENERAL / COMPARTIDAS ---

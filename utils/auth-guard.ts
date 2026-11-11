@@ -1,4 +1,5 @@
-import { menuOptions, UserRole } from "@/data/menu";
+import { menuOptions } from "@/data/menu";
+import { UserRole } from "@/types";
 
 export const isRouteAllowed = (pathname: string, role: UserRole): boolean => {
   return menuOptions.some((item) => {

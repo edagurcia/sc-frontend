@@ -14,7 +14,7 @@ import { useAuthStore } from "@/stores";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
-import { UserRole } from "@/data/menu";
+import type { UserRole } from "@/types";
 import { Eye, EyeOff } from "lucide-react";
 
 export const LoginForm = ({
