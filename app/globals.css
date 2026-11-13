@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@import "leaflet/dist/leaflet.css";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -126,4 +128,28 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Scrollbar personalizado delgado y con el color primario */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  filter: brightness(0.9);
 }

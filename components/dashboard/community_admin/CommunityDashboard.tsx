@@ -11,11 +11,19 @@ import {
   CheckCircle2,
   Calendar,
 } from "lucide-react";
-import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
+import { ResidentList } from "@/components/resident/ResidentsList";
+import { CommunityMap } from "@/components/dashboard/community_admin/CommunityMap";
+import { useDashboardMetrics, useCommunityMap } from "@/hooks";
 import { getPeriodReportHtmlAction } from "@/actions/dashboard/";
 
 export const CommunityDashboard = () => {
   const { data: metrics, isLoading, error } = useDashboardMetrics();
+  const {
+    data: mapData,
+    isLoading: isLoadingMap,
+    error: mapError,
+  } = useCommunityMap();
+
   const [isPending, startTransition] = useTransition();
 
   const handleDownloadReport = () => {
@@ -162,6 +170,26 @@ export const CommunityDashboard = () => {
           </div>
         </div>
       </div>
+
+      <div className="rounded-xl border border-border/60 bg-card p-5 shadow-2xs space-y-2">
+        <ResidentList />
+      </div>
+
+      {isLoadingMap ? (
+        <div className="flex h-80 w-full items-center justify-center rounded-2xl border border-border/60 bg-card text-muted-foreground shadow-2xs">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" />
+          <span>Cargando mapa de la comunidad...</span>
+        </div>
+      ) : mapError ? (
+        <div className="rounded-xl border border-destructive/25 bg-destructive/10 p-4 text-destructive flex items-center gap-3 text-sm">
+          <AlertCircle className="h-5 w-5 shrink-0" />
+          <span>
+            {mapError.message || "Error al cargar el mapa de la comunidad."}
+          </span>
+        </div>
+      ) : mapData ? (
+        <CommunityMap data={mapData} />
+      ) : null}
     </div>
   );
 };
