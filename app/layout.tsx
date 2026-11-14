@@ -18,6 +18,7 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
 const fontMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
+  preload: false,
 });
 
 export const metadata: Metadata = {

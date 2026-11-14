@@ -7,6 +7,7 @@ import { Navbar } from "./Navbar";
 import { useAuthStore } from "@/stores/auth-store";
 import { ThemeToggle } from "./ThemeToggle";
 import { CommunityInfo } from "./CommunityInfo";
+import { Notifications } from "./Notifications";
 
 export const Header = () => {
   const pathname = usePathname();
@@ -19,7 +20,7 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/85 backdrop-blur-md transition-colors">
-      <div className="relative mx-auto flex h-auto min-h-20 max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex h-auto min-h-20 items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-center gap-2">
           <Link
             href="/"
@@ -46,6 +47,8 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center gap-3 z-10">
+          <Notifications />
+
           <ThemeToggle />
 
           {isAuthenticated && <Navbar />}

@@ -15,20 +15,52 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ResidentRow } from "@/components/resident/ResidentRow";
-import { Resident } from "@/actions/residents/getResidentsAction";
+import { Resident } from "@/schemas";
 import { CommunityDashboardActions } from "./CommunityDashboardActions";
+import { AdminCrudActions } from "./AdminCrudActions";
 
-const ENTITY_KEY = "community-residents";
+interface ResidentListProps {
+  variant?: "community" | "admin";
+  onGeneratePayment?: (resident: Resident) => void;
+  onViewDetails?: (resident: Resident) => void;
+  onEdit?: (resident: Resident) => void;
+  onToggleStatus?: (resident: Resident) => void;
+  onDelete?: (resident: Resident) => void;
+  entityKey?: string;
+  communityId?: string;
+  onlyDebtors?: boolean;
+  period?: string;
+}
 
-export const ResidentList = () => {
-  const { data: residents = [], isLoading, error } = useResidents();
+export const ResidentList = ({
+  variant = "community",
+  onGeneratePayment,
+  onViewDetails,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  entityKey = "community-residents",
+  communityId,
+  onlyDebtors = false,
+  period,
+}: ResidentListProps) => {
+  const {
+    data: residents = [],
+    isLoading,
+    error,
+  } = useResidents({
+    communityId,
+    onlyDebtors,
+    period,
+  });
+
   const [filterText, setFilterText] = useState("");
 
   const currentPage = usePaginationStore(
-    (state) => state.pages[ENTITY_KEY] ?? 1,
+    (state) => state.pages[entityKey] ?? 1,
   );
   const pageSize = usePaginationStore(
-    (state) => state.pageSize[ENTITY_KEY] ?? 10,
+    (state) => state.pageSize[entityKey] ?? 10,
   );
 
   const { dataSet: filteredResidents } = useSearch({
@@ -44,15 +76,6 @@ export const ResidentList = () => {
     (safePage - 1) * pageSize,
     safePage * pageSize,
   );
-
-  const handleGeneratePayment = (resident: Resident) => {
-    console.log("Generar pago para:", resident.fullName);
-  };
-
-  const handleViewDetails = (resident: Resident) => {
-    console.log("Ver detalles del residente:", resident.fullName);
-    // Aquí puedes abrir un modal o navegar al detalle del residente
-  };
 
   if (isLoading) {
     return (
@@ -76,10 +99,14 @@ export const ResidentList = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h3 className="text-base font-semibold text-foreground">
-            Gestión de Residentes
+            {onlyDebtors
+              ? "Residentes con Deuda Pendiente"
+              : "Gestión de Residentes"}
           </h3>
           <p className="text-xs text-muted-foreground">
-            Listado oficial de propiedades y residentes registrados.
+            {onlyDebtors
+              ? `Listado de morosos para el período ${period || "actual"}.`
+              : "Listado oficial de propiedades y residentes registrados."}
           </p>
         </div>
         <div className="w-full sm:w-72">
@@ -111,29 +138,43 @@ export const ResidentList = () => {
                   colSpan={6}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  No se encontraron residentes registrados.
+                  {onlyDebtors
+                    ? "¡Excelente! No hay residentes con deudas pendientes para este período."
+                    : "No se encontraron residentes registrados."}
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedResidents.map((resident) => (
-                <ResidentRow
-                  key={resident.id}
-                  resident={resident}
-                  actions={
+              paginatedResidents.map((resident) => {
+                const actionsNode =
+                  variant === "admin" ? (
+                    <AdminCrudActions
+                      resident={resident}
+                      onEdit={() => onEdit?.(resident)}
+                      onToggleStatus={() => onToggleStatus?.(resident)}
+                      onDelete={() => onDelete?.(resident)}
+                    />
+                  ) : (
                     <CommunityDashboardActions
                       resident={resident}
-                      onGeneratePayment={handleGeneratePayment}
-                      onViewDetails={handleViewDetails}
+                      onGeneratePayment={() => onGeneratePayment?.(resident)}
+                      onViewDetails={() => onViewDetails?.(resident)}
                     />
-                  }
-                />
-              ))
+                  );
+
+                return (
+                  <ResidentRow
+                    key={resident.id}
+                    resident={resident}
+                    actions={actionsNode}
+                  />
+                );
+              })
             )}
           </TableBody>
         </Table>
 
         <TablePagination
-          entityKey={ENTITY_KEY}
+          entityKey={entityKey}
           totalPages={totalPages}
           totalItems={totalItems}
           isLoading={isLoading}

@@ -1,6 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
+import { Resident } from "@/schemas";
 
 export interface SecurityDevice {
   id: string;
@@ -10,58 +11,37 @@ export interface SecurityDevice {
   issuedAt: string;
 }
 
-export interface Resident {
-  id: string;
-  communityId: string;
-  userId: string | null;
-  dni: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  avatarUrl: string | null;
-  emergencyContact: string | null;
-  address: string;
-  reference: string;
-  houseNumber: string | null;
-  street: string | null;
-  avenue: string | null;
-  tenureType: "propia" | "alquilada" | string;
-  securityDevices: SecurityDevice[];
-  hasCistern: boolean;
-  floorsCount: number;
-  hasGarage: boolean;
-  adultsCount: number;
-  minorsCount: number;
-  monthlyFee: string;
-  previousFee: string | null;
-  lastFeeUpdate: string | null;
-  feeUpdateReason: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface ResidentsResponse {
   residents: Resident[];
+  period?: string;
+  totalDebtors?: number;
 }
 
-export async function getResidentsAction(communityId?: string): Promise<{
+export async function getResidentsAction(
+  communityId?: string,
+  onlyDebtors: boolean = false,
+  period?: string,
+): Promise<{
   success: boolean;
   data?: Resident[];
   error?: string;
 }> {
   try {
-    const query = communityId
-      ? `?communityId=${encodeURIComponent(communityId)}`
-      : "";
+    const params = new URLSearchParams();
+    if (communityId) params.append("communityId", communityId);
+    if (onlyDebtors && period) params.append("period", period);
 
-    const response = await scFetch<ResidentsResponse>(
-      `/api/v1/residents${query}`,
-      {
-        method: "GET",
-        next: { revalidate: 60 },
-      },
-    );
+    const queryString = params.toString() ? `?${params.toString()}` : "";
+
+    // Selecciona el endpoint según el parámetro
+    const endpoint = onlyDebtors
+      ? `/api/v1/residents/debtors${queryString}`
+      : `/api/v1/residents${queryString}`;
+
+    const response = await scFetch<ResidentsResponse>(endpoint, {
+      method: "GET",
+      cache: "no-store",
+    });
 
     return {
       success: true,

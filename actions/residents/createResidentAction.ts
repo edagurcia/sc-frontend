@@ -1,8 +1,8 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { ResidentFormValues } from "@/schemas";
-import { Resident } from "./getResidentsAction";
+import { revalidatePath } from "next/cache";
+import { ResidentFormValues, Resident } from "@/schemas";
 
 export interface CreateResidentResponse {
   message: string;
@@ -21,8 +21,11 @@ export async function createResidentAction(input: ResidentFormValues): Promise<{
       {
         method: "POST",
         body: JSON.stringify(input),
+        cache: "no-store",
       },
     );
+
+    revalidatePath("/dashboard/residents");
 
     return {
       success: true,

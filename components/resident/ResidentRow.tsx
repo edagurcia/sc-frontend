@@ -1,10 +1,11 @@
 "use client";
 
+import { ReactNode } from "react";
+import { UserCheck, UserX } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { UserCheck, UserX } from "lucide-react";
-import { Resident } from "@/actions/residents/getResidentsAction";
-import { ReactNode } from "react";
+import { Resident } from "@/schemas";
+import { formatCurrency } from "@/utils/formatters";
 
 interface ResidentRowProps {
   resident: Resident;
@@ -23,20 +24,18 @@ export const ResidentRow = ({ resident, actions }: ResidentRowProps) => {
             {resident.fullName}
           </span>
           <span className="text-[11px] text-muted-foreground">
-            {resident.email}
+            {resident.dni}
           </span>
         </div>
       </TableCell>
       <TableCell>
         <div className="flex flex-col text-xs text-muted-foreground">
           <span>{resident.phone}</span>
-          <span className="italic">
-            {resident.street || "N/A"}, {resident.avenue || "N/A"}
-          </span>
+          <span className="italic">{resident.email}</span>
         </div>
       </TableCell>
       <TableCell className="font-semibold text-foreground">
-        L. {resident.monthlyFee}
+        {formatCurrency(resident.monthlyFee)}
       </TableCell>
       <TableCell className="text-center">
         <Badge

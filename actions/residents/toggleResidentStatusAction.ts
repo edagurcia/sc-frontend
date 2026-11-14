@@ -1,6 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
+import { revalidatePath } from "next/cache";
 
 export interface ToggleResidentStatusResponse {
   message: string;
@@ -30,8 +31,11 @@ export async function toggleResidentStatusAction(
       {
         method: "PATCH",
         body: JSON.stringify({ isActive }),
+        cache: "no-store",
       },
     );
+
+    revalidatePath("/dashboard/residents");
 
     return {
       success: true,

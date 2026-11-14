@@ -131,6 +131,10 @@
 }
 
 /* Scrollbar personalizado delgado y con el color primario */
+html {
+  scrollbar-gutter: stable;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--primary) transparent;
@@ -152,4 +156,49 @@
 
 ::-webkit-scrollbar-thumb:hover {
   filter: brightness(0.9);
+}
+
+/* Adaptación de Leaflet a Dark/Light Mode con variables de Shadcn */
+/* Filtro para oscurecer OpenStreetMap de forma nativa en modo oscuro */
+.dark-map .leaflet-tile-pane {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2) !important;
+}
+
+.leaflet-popup-close-button {
+  color: var(--muted-foreground) !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: var(--foreground) !important;
+}
+
+.leaflet-bar a {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--muted) !important;
+}
+
+.leaflet-control-attribution {
+  background-color: color-mix(
+    in srgb,
+    var(--background) 80%,
+    transparent
+  ) !important;
+  color: var(--muted-foreground) !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--primary) !important;
 }

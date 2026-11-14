@@ -1,16 +1,24 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  getResidentsAction,
-  Resident,
-} from "@/actions/residents/getResidentsAction";
+import { getResidentsAction } from "@/actions/residents/getResidentsAction";
+import { Resident } from "@/schemas";
 
-export function useResidents(communityId?: string) {
+interface UseResidentsOptions {
+  communityId?: string;
+  onlyDebtors?: boolean;
+  period?: string;
+}
+
+export function useResidents({
+  communityId,
+  onlyDebtors = false,
+  period,
+}: UseResidentsOptions = {}) {
   return useQuery<Resident[], Error>({
-    queryKey: ["residents", communityId],
+    queryKey: ["residents", { communityId, onlyDebtors, period }],
     queryFn: async () => {
-      const res = await getResidentsAction(communityId);
+      const res = await getResidentsAction(communityId, onlyDebtors, period);
       if (!res.success || !res.data) {
         throw new Error(
           res.error || "Error al obtener el listado de residentes",
@@ -18,7 +26,7 @@ export function useResidents(communityId?: string) {
       }
       return res.data;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos de caché
+    staleTime: 0,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,

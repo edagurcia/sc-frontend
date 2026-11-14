@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { DollarSign, Eye } from "lucide-react";
-import { Resident } from "@/actions/residents/getResidentsAction";
+import { Resident } from "@/schemas";
 
 interface Props {
   resident: Resident;

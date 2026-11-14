@@ -13,7 +13,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 2,
     label: "Perfil",
-    href: "/dashboard/profile",
+    href: "/profile",
     icon: "ShieldUser",
     roles: ["super_admin", "community_admin", "guard", "resident"],
     isMenuOption: true,
@@ -23,7 +23,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 10,
     label: "Gestión de Comunidades",
-    href: "/dashboard/communities",
+    href: "/communities",
     icon: "Building2",
     roles: ["super_admin"],
     isMenuOption: true,
@@ -31,7 +31,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 11,
     label: "Gestión de Usuarios",
-    href: "/dashboard/users",
+    href: "/users",
     icon: "UsersCog",
     roles: ["super_admin"],
     isMenuOption: true,
@@ -41,7 +41,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 20,
     label: "Residentes",
-    href: "/dashboard/residents",
+    href: "/residents",
     icon: "Users",
     roles: ["community_admin"],
     isMenuOption: true,
@@ -49,7 +49,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 21,
     label: "Cobros",
-    href: "/dashboard/payments",
+    href: "/payments",
     icon: "CreditCard",
     roles: ["community_admin"],
     isMenuOption: true,
@@ -57,7 +57,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 22,
     label: "Anuncios",
-    href: "/dashboard/announcements",
+    href: "/announcements",
     icon: "Megaphone",
     roles: ["community_admin"],
     isMenuOption: true,
@@ -65,7 +65,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 23,
     label: "Notificaciones",
-    href: "/dashboard/notifications",
+    href: "/notifications",
     icon: "Bell",
     roles: ["community_admin"],
     isMenuOption: true,
@@ -73,7 +73,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 24,
     label: "Control de Visitas",
-    href: "/dashboard/visits",
+    href: "/visits",
     icon: "ClipboardList",
     roles: ["community_admin", "guard"],
     isMenuOption: true,
@@ -83,7 +83,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 30,
     label: "Mis Pagos",
-    href: "/dashboard/my-payments",
+    href: "/my-payments",
     icon: "Wallet",
     roles: ["resident"],
     isMenuOption: true,
@@ -91,7 +91,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 31,
     label: "Mis Visitas",
-    href: "/dashboard/my-visits",
+    href: "/my-visits",
     icon: "UserCheck",
     roles: ["resident"],
     isMenuOption: true,
@@ -101,7 +101,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 100,
     label: "Detalle de Comunidad",
-    href: "/dashboard/communities/[id]",
+    href: "/communities/[id]",
     icon: "FileText",
     roles: ["super_admin"],
     isMenuOption: false,
@@ -109,7 +109,7 @@ export const menuOptions: TMenu[] = [
   {
     id: 101,
     label: "Detalle de Residente",
-    href: "/dashboard/residents/[id]",
+    href: "/residents/[id]",
     icon: "FileText",
     roles: ["community_admin"],
     isMenuOption: false,

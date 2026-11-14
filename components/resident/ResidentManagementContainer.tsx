@@ -1,0 +1,223 @@
+"use client";
+
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ResidentList } from "./ResidentsList";
+import { Modal } from "@/components/Modal";
+import {
+  Resident,
+  ResidentFormValues,
+  UpdateResidentFormValues,
+} from "@/schemas";
+import { getResidentByIdAction } from "@/actions/residents/getResidentByIdAction";
+import { createResidentAction } from "@/actions/residents/createResidentAction";
+import { updateResidentAction } from "@/actions/residents/updateResidentAction";
+import { toggleResidentStatusAction } from "@/actions/residents/toggleResidentStatusAction";
+import { ResidentForm } from "./ResidentForm";
+
+type ModalMode = "create" | "edit" | "toggle";
+
+export const ResidentManagementContainer = () => {
+  const queryClient = useQueryClient();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<ModalMode>("create");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedResidentForToggle, setSelectedResidentForToggle] =
+    useState<Resident | null>(null);
+
+  // Query individual para obtener los datos frescos del residente al editar
+  const { data: residentDetailResponse, isLoading: isLoadingDetail } = useQuery(
+    {
+      queryKey: ["resident", selectedId],
+      queryFn: () => getResidentByIdAction(selectedId!),
+      enabled: modalMode === "edit" && !!selectedId,
+      staleTime: 0,
+    },
+  );
+
+  const residentToEdit = residentDetailResponse?.success
+    ? residentDetailResponse.data
+    : null;
+
+  // 1. Crear residente
+  const handleCreate = async (values: ResidentFormValues) => {
+    const result = await createResidentAction(values);
+    if (result.success) {
+      await queryClient.invalidateQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      setIsOpen(false);
+    } else {
+      console.error(result.error);
+    }
+  };
+
+  // 2. Actualizar residente
+  const handleUpdate = async (values: UpdateResidentFormValues) => {
+    if (!selectedId) return;
+    const result = await updateResidentAction(selectedId, values);
+    if (result.success) {
+      await queryClient.invalidateQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      setIsOpen(false);
+      setSelectedId(null);
+    } else {
+      console.error(result.error);
+    }
+  };
+
+  // 3. Cambiar estado
+  const handleConfirmToggle = async () => {
+    if (!selectedResidentForToggle) return;
+    const newStatus = !selectedResidentForToggle.isActive;
+    const result = await toggleResidentStatusAction(
+      selectedResidentForToggle.id,
+      newStatus,
+    );
+    if (result.success) {
+      await queryClient.invalidateQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      setIsOpen(false);
+      setSelectedResidentForToggle(null);
+    } else {
+      console.error(result.error);
+    }
+  };
+
+  // Aperturas de modal
+  const openCreateModal = () => {
+    setSelectedId(null);
+    setSelectedResidentForToggle(null);
+    setModalMode("create");
+    setIsOpen(true);
+  };
+
+  const openEditModal = (resident: Resident) => {
+    setSelectedId(resident.id);
+    setModalMode("edit");
+    setIsOpen(true);
+  };
+
+  const openToggleModal = (resident: Resident) => {
+    setSelectedResidentForToggle(resident);
+    setModalMode("toggle");
+    setIsOpen(true);
+  };
+
+  const handleDelete = async (resident: Resident) => {
+    if (!confirm(`¿Estás seguro de eliminar a ${resident.fullName}?`)) return;
+    console.log("Eliminar residente:", resident.id);
+  };
+
+  const getModalTitle = () => {
+    if (modalMode === "create") return "Registrar Nuevo Residente";
+    if (modalMode === "edit") return "Modificando datos de residente";
+    return "Confirmar Cambio de Estado";
+  };
+
+  const getModalSubtitle = () => {
+    if (modalMode === "create")
+      return "Ingresa la información de la propiedad y el residente.";
+    if (modalMode === "edit") return "Actualiza los campos necesarios.";
+    return `¿Estás seguro de cambiar el estado de ${selectedResidentForToggle?.fullName}?`;
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-end">
+        <Button onClick={openCreateModal} className="cursor-pointer">
+          <Plus /> Nuevo Residente
+        </Button>
+      </div>
+
+      <ResidentList
+        variant="admin"
+        entityKey="admin-residents"
+        onEdit={openEditModal}
+        onToggleStatus={openToggleModal}
+        onDelete={handleDelete}
+      />
+
+      <Modal
+        isOpen={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+          setSelectedId(null);
+          setSelectedResidentForToggle(null);
+        }}
+        title={getModalTitle()}
+        subtitle={getModalSubtitle()}
+        className={modalMode === "toggle" ? "max-w-md" : "max-w-2xl"}
+      >
+        {modalMode === "create" && (
+          <ResidentForm
+            onSubmit={handleCreate}
+            onCancel={() => setIsOpen(false)}
+          />
+        )}
+
+        {modalMode === "edit" &&
+          (isLoadingDetail ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <ResidentForm
+              initialData={residentToEdit}
+              onSubmit={handleUpdate}
+              onCancel={() => setIsOpen(false)}
+            />
+          ))}
+
+        {modalMode === "toggle" && selectedResidentForToggle && (
+          <div className="flex flex-col gap-4 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Esta acción cambiará el acceso y la visibilidad del residente.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="cursor-pointer"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                variant={
+                  selectedResidentForToggle.isActive ? "destructive" : "default"
+                }
+                onClick={handleConfirmToggle}
+                className="cursor-pointer"
+              >
+                Sí,{" "}
+                {selectedResidentForToggle.isActive ? "Desactivar" : "Activar"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};

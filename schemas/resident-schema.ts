@@ -9,7 +9,10 @@ export const securityDeviceSchema = z.object({
 });
 
 export const residentSchema = z.object({
-  dni: z.string().min(13, "El DNI debe tener al menos 13 caracteres"),
+  dni: z
+    .string()
+    .regex(/^\d+$/, "El DNI solo debe contener números")
+    .max(13, "El DNI no puede tener más de 13 caracteres"),
   fullName: z.string().min(3, "El nombre completo es requerido"),
   email: z.string().email("Correo electrónico inválido"),
   phone: z.string().min(8, "El teléfono es requerido"),
@@ -19,6 +22,11 @@ export const residentSchema = z.object({
   street: z.string().min(1, "La calle es requerida"),
   avenue: z.string().min(1, "La avenida es requerida"),
   tenureType: z.string().min(1, "El tipo de tenencia es requerido"),
+
+  // Campos de georreferenciación opcionales para el mapa
+  latitude: z.coerce.number().optional().nullable(),
+  longitude: z.coerce.number().optional().nullable(),
+
   securityDevices: z.array(securityDeviceSchema).optional(),
   emergencyContact: z.string().optional(),
   avatarUrl: z
@@ -42,6 +50,8 @@ export const residentEntitySchema = residentSchema.extend({
   previousFee: z.string().nullable().optional(),
   lastFeeUpdate: z.string().nullable().optional(),
   feeUpdateReason: z.string().nullable().optional(),
+  latitude: z.coerce.number().nullable().optional(),
+  longitude: z.coerce.number().nullable().optional(),
   isActive: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -61,14 +71,10 @@ export const reportDeviceSchema = z.object({
   newStatus: z.enum(["lost", "damaged"]),
 });
 
-// Tipo inferido para formularios e inputs de creación
+// Tipos inferidos
 export type ResidentFormValues = z.infer<typeof residentSchema>;
-
-// Tipo para edición (vuelve todos los campos opcionales excepto los requeridos si aplica)
 export const updateResidentSchema = residentSchema.partial();
 export type UpdateResidentFormValues = z.infer<typeof updateResidentSchema>;
-
-// Tipo completo de la entidad Resident
 export type Resident = z.infer<typeof residentEntitySchema>;
 export type UpdateMyProfileFormValues = z.infer<typeof updateMyProfileSchema>;
 export type ReportDeviceInput = z.infer<typeof reportDeviceSchema>;

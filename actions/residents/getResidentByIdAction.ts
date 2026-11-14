@@ -1,7 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { Resident } from "./getResidentsAction";
+import { Resident } from "@/schemas";
 
 export interface ResidentDetailResponse {
   resident: Resident;
@@ -21,7 +21,7 @@ export async function getResidentByIdAction(id: string): Promise<{
       `/api/v1/residents/${id}`,
       {
         method: "GET",
-        next: { revalidate: 60 },
+        cache: "no-store",
       },
     );
 
