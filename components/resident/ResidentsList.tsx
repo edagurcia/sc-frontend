@@ -151,7 +151,6 @@ export const ResidentList = ({
                       resident={resident}
                       onEdit={() => onEdit?.(resident)}
                       onToggleStatus={() => onToggleStatus?.(resident)}
-                      onDelete={() => onDelete?.(resident)}
                     />
                   ) : (
                     <CommunityDashboardActions
