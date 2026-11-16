@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { UserRole } from "@/types";
+import { Community } from "@/schemas";
 
 interface User {
   id: string;
@@ -8,16 +9,6 @@ interface User {
   email: string;
   role: UserRole;
   communityId: string | null;
-}
-
-interface Community {
-  id: string;
-  name: string;
-  department: string;
-  municipality: string;
-  address: string;
-  polygon: string | null;
-  isActive: boolean;
 }
 
 interface AuthState {

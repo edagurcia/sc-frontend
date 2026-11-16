@@ -10,7 +10,7 @@ export const CommunityInfo = () => {
   if (!isAuthenticated || !community) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center w-full md:w-auto md:absolute md:left-1/2 md:-translate-x-1/2">
+    <div className="flex flex-col items-center justify-center w-full md:w-auto md:absolute md:left-1/2 md:-translate-x-1/2 select-none">
       <div className="group flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-background/80 dark:bg-card/60 backdrop-blur-md border border-border/60 shadow-xs transition-all hover:border-primary/40">
         {/* Icono de comunidad con contenedor sutil */}
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

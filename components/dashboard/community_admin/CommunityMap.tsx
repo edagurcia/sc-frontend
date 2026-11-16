@@ -66,11 +66,14 @@ export function CommunityMap({ data }: CommunityMapProps) {
     const defaultCenter: [number, number] = [14.0723, -87.2072];
 
     // 4. Agregar marcadores dinámicamente
-    data.residents.forEach((resident, index) => {
-      const latOffset = index * 0.001 - 0.004;
-      const lngOffset = index * 0.001 - 0.004;
-      const lat = defaultCenter[0] + latOffset;
-      const lng = defaultCenter[1] + lngOffset;
+    data.residents.forEach((resident) => {
+      // Verificación de seguridad por si acaso llega algún registro sin coordenadas
+      if (!resident.latitude || !resident.longitude) return;
+
+      const lat = parseFloat(resident.latitude);
+      const lng = parseFloat(resident.longitude);
+
+      if (isNaN(lat) || isNaN(lng)) return;
 
       const popupContent = `
         <div style="font-family: inherit; font-size: 12px; line-height: 1.4;">

@@ -6,6 +6,7 @@ export const createCommunitySchema = z.object({
   municipality: z.string().min(1, "El municipio es obligatorio"),
   address: z.string().min(1, "La dirección es obligatoria"),
   polygon: z.string().min(1, "Debes dibujar el polígono en el mapa"),
+  allowUserCreation: z.boolean().default(true),
 });
 
 export const updateCommunitySchema = createCommunitySchema.partial().extend({
@@ -22,6 +23,9 @@ export interface CommunityResponse {
   municipality: string;
   address: string;
   polygon: string;
+  allowUserCreation: boolean;
   isActive: boolean;
   createdAt: string;
 }
+
+export type Community = CommunityResponse;

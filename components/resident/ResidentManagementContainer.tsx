@@ -15,9 +15,11 @@ import { getResidentByIdAction } from "@/actions/residents/getResidentByIdAction
 import { createResidentAction } from "@/actions/residents/createResidentAction";
 import { updateResidentAction } from "@/actions/residents/updateResidentAction";
 import { toggleResidentStatusAction } from "@/actions/residents/toggleResidentStatusAction";
+import { manageResidentUserAction } from "@/actions/residents/manageResidentUserAction";
 import { ResidentForm } from "./ResidentForm";
+import { ResidentUserAccessForm } from "./ResidentUserAccessForm";
 
-type ModalMode = "create" | "edit" | "toggle";
+type ModalMode = "create" | "edit" | "toggle" | "user";
 
 export const ResidentManagementContainer = () => {
   const queryClient = useQueryClient();
@@ -26,6 +28,8 @@ export const ResidentManagementContainer = () => {
   const [modalMode, setModalMode] = useState<ModalMode>("create");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedResidentForToggle, setSelectedResidentForToggle] =
+    useState<Resident | null>(null);
+  const [selectedResidentForUser, setSelectedResidentForUser] =
     useState<Resident | null>(null);
 
   // Query individual para obtener los datos frescos del residente al editar
@@ -104,10 +108,34 @@ export const ResidentManagementContainer = () => {
     }
   };
 
+  // 4. Crear o Gestionar usuario vinculado por correo
+  const handleSaveUserPassword = async (
+    resident: Resident,
+    newPassword: string,
+  ) => {
+    const result = await manageResidentUserAction(resident, newPassword);
+
+    if (result.success) {
+      await queryClient.invalidateQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      await queryClient.refetchQueries({
+        queryKey: ["residents"],
+        exact: false,
+      });
+      setIsOpen(false);
+      setSelectedResidentForUser(null);
+    } else {
+      console.error(result.error);
+    }
+  };
+
   // Aperturas de modal
   const openCreateModal = () => {
     setSelectedId(null);
     setSelectedResidentForToggle(null);
+    setSelectedResidentForUser(null);
     setModalMode("create");
     setIsOpen(true);
   };
@@ -124,14 +152,16 @@ export const ResidentManagementContainer = () => {
     setIsOpen(true);
   };
 
-  const handleDelete = async (resident: Resident) => {
-    if (!confirm(`¿Estás seguro de eliminar a ${resident.fullName}?`)) return;
-    console.log("Eliminar residente:", resident.id);
+  const openUserModal = (resident: Resident) => {
+    setSelectedResidentForUser(resident);
+    setModalMode("user");
+    setIsOpen(true);
   };
 
   const getModalTitle = () => {
     if (modalMode === "create") return "Registrar Nuevo Residente";
     if (modalMode === "edit") return "Modificando datos de residente";
+    if (modalMode === "user") return "Gestión de Usuario Asociado";
     return "Confirmar Cambio de Estado";
   };
 
@@ -139,6 +169,8 @@ export const ResidentManagementContainer = () => {
     if (modalMode === "create")
       return "Ingresa la información de la propiedad y el residente.";
     if (modalMode === "edit") return "Actualiza los campos necesarios.";
+    if (modalMode === "user")
+      return `Administrar cuenta de usuario para ${selectedResidentForUser?.fullName} (${selectedResidentForUser?.email || "Sin correo"})`;
     return `¿Estás seguro de cambiar el estado de ${selectedResidentForToggle?.fullName}?`;
   };
 
@@ -155,7 +187,7 @@ export const ResidentManagementContainer = () => {
         entityKey="admin-residents"
         onEdit={openEditModal}
         onToggleStatus={openToggleModal}
-        onDelete={handleDelete}
+        onManageUser={openUserModal}
       />
 
       <Modal
@@ -164,6 +196,7 @@ export const ResidentManagementContainer = () => {
           setIsOpen(false);
           setSelectedId(null);
           setSelectedResidentForToggle(null);
+          setSelectedResidentForUser(null);
         }}
         title={getModalTitle()}
         subtitle={getModalSubtitle()}
@@ -216,6 +249,14 @@ export const ResidentManagementContainer = () => {
               </Button>
             </div>
           </div>
+        )}
+
+        {modalMode === "user" && selectedResidentForUser && (
+          <ResidentUserAccessForm
+            resident={selectedResidentForUser}
+            onSavePassword={handleSaveUserPassword}
+            onCancel={() => setIsOpen(false)}
+          />
         )}
       </Modal>
     </div>

@@ -21,6 +21,8 @@ export interface MapResidentItem {
   address: string;
   reference: string;
   phone: string;
+  latitude: string | null;
+  longitude: string | null;
   isActive: boolean;
 }
 

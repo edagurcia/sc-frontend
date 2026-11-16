@@ -132,7 +132,7 @@ export const Notifications = () => {
       <PopoverTrigger className="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-card hover:bg-muted text-foreground transition-colors cursor-pointer">
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground animate-pulse pointer-events-none">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white animate-pulse pointer-events-none">
             {unreadCount}
           </span>
         )}

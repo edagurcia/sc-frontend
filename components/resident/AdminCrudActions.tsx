@@ -1,25 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Edit, Power, DollarSign, Shield, MapPin } from "lucide-react";
+import { Edit, Power, Shield, MapPin, User } from "lucide-react";
 import { Resident } from "@/schemas";
 
 interface Props {
   resident: Resident;
+  allowUserCreation?: boolean;
   onEdit: (resident: Resident) => void;
   onToggleStatus: (resident: Resident) => void;
-  onPay?: (resident: Resident) => void;
   onManageDevices?: (resident: Resident) => void;
   onEditLocation?: (resident: Resident) => void;
+  onManageUser?: (resident: Resident) => void;
 }
 
 export const AdminCrudActions = ({
   resident,
+  allowUserCreation = true,
   onEdit,
   onToggleStatus,
-  onPay,
   onManageDevices,
   onEditLocation,
+  onManageUser,
 }: Props) => {
   // Verifica si ya cuenta con georreferenciación activa
   const hasLocation =
@@ -28,18 +30,31 @@ export const AdminCrudActions = ({
     resident.longitude !== null &&
     resident.longitude !== undefined;
 
+  // Verifica si el residente tiene un usuario vinculado
+  const hasUser = Boolean(resident.user?.id || resident.userId);
+
   return (
     <div className="flex items-center justify-end gap-1">
-      {/* Botón para generar / registrar pago mensual */}
-      <Button
-        size="sm"
-        variant="ghost"
-        className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-500/10"
-        onClick={() => onPay?.(resident)}
-        title="Generar o registrar pago mensual"
-      >
-        <DollarSign className="h-4 w-4" />
-      </Button>
+      {/* Botón para generar / editar usuario */}
+      {allowUserCreation && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className={`h-8 w-8 p-0 transition-colors ${
+            hasUser
+              ? "text-primary hover:bg-primary/10"
+              : "text-muted-foreground hover:bg-muted"
+          }`}
+          onClick={() => onManageUser?.(resident)}
+          title={
+            hasUser
+              ? `Usuario vinculado (${resident.user?.email || resident.email})`
+              : "Sin usuario (Clic para crear o vincular)"
+          }
+        >
+          <User className="h-4 w-4" />
+        </Button>
+      )}
 
       {/* Botón para gestionar dispositivos de seguridad */}
       {onManageDevices && (

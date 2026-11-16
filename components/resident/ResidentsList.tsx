@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useResidents, useSearch } from "@/hooks";
-import { usePaginationStore } from "@/stores";
+import { useAuthStore, usePaginationStore } from "@/stores";
 import { TablePagination } from "@/components/TablePagination";
 import { SearchComponent } from "@/components/SearchComponent";
 import {
@@ -25,7 +25,7 @@ interface ResidentListProps {
   onViewDetails?: (resident: Resident) => void;
   onEdit?: (resident: Resident) => void;
   onToggleStatus?: (resident: Resident) => void;
-  onDelete?: (resident: Resident) => void;
+  onManageUser?: (resident: Resident) => void;
   entityKey?: string;
   communityId?: string;
   onlyDebtors?: boolean;
@@ -38,7 +38,7 @@ export const ResidentList = ({
   onViewDetails,
   onEdit,
   onToggleStatus,
-  onDelete,
+  onManageUser,
   entityKey = "community-residents",
   communityId,
   onlyDebtors = false,
@@ -76,6 +76,9 @@ export const ResidentList = ({
     (safePage - 1) * pageSize,
     safePage * pageSize,
   );
+
+  const community = useAuthStore((state) => state.community);
+  const allowUserCreation = community?.allowUserCreation ?? true;
 
   if (isLoading) {
     return (
@@ -149,8 +152,12 @@ export const ResidentList = ({
                   variant === "admin" ? (
                     <AdminCrudActions
                       resident={resident}
+                      allowUserCreation={allowUserCreation}
                       onEdit={() => onEdit?.(resident)}
                       onToggleStatus={() => onToggleStatus?.(resident)}
+                      onManageUser={
+                        onManageUser ? () => onManageUser(resident) : undefined
+                      }
                     />
                   ) : (
                     <CommunityDashboardActions

@@ -34,6 +34,7 @@ export const residentSchema = z.object({
     .url("URL de avatar inválida")
     .optional()
     .or(z.literal("")),
+
   monthlyFee: z.coerce.number().positive("La cuota mensual debe ser mayor a 0"),
   hasCistern: z.boolean().default(false),
   floorsCount: z.coerce.number().int().positive().default(1),
@@ -42,11 +43,20 @@ export const residentSchema = z.object({
   minorsCount: z.coerce.number().int().nonnegative().default(0),
 });
 
+// Estructura del usuario vinculado devuelto por el Left Join
+export const residentUserSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  role: z.string(),
+  isActive: z.boolean(),
+});
+
 export const residentEntitySchema = residentSchema.extend({
   id: z.string(),
   communityId: z.string(),
   userId: z.string().nullable().optional(),
-  monthlyFee: z.string(),
+  monthlyFee: z.string(), // Viene de la BD como string decimal
   previousFee: z.string().nullable().optional(),
   lastFeeUpdate: z.string().nullable().optional(),
   feeUpdateReason: z.string().nullable().optional(),
@@ -55,6 +65,8 @@ export const residentEntitySchema = residentSchema.extend({
   isActive: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  // Información opcional del usuario vinculado por correo
+  user: residentUserSchema.nullable().optional(),
 });
 
 export const updateMyProfileSchema = residentSchema

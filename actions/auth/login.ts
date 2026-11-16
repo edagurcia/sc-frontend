@@ -2,16 +2,7 @@
 
 import { cookies } from "next/headers";
 import { loginSchema, LoginInput } from "@/schemas";
-
-interface Community {
-  id: string;
-  name: string;
-  department: string;
-  municipality: string;
-  address: string;
-  polygon: string | null;
-  isActive: boolean;
-}
+import { Community } from "@/schemas";
 
 interface AuthResponse {
   message: string;
