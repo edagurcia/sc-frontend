@@ -1,12 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { ReportDeviceInput, Resident } from "@/schemas";
-
-export interface ReportDeviceResponse {
-  message: string;
-  resident: Resident;
-}
+import { ReportDeviceInput, Resident, ResidentResponse } from "@/schemas";
 
 export async function reportDeviceAction(input: ReportDeviceInput): Promise<{
   success: boolean;
@@ -15,7 +10,7 @@ export async function reportDeviceAction(input: ReportDeviceInput): Promise<{
   error?: string;
 }> {
   try {
-    const response = await scFetch<ReportDeviceResponse>(
+    const response = await scFetch<ResidentResponse>(
       "/api/v1/resident-profile/me/devices/report",
       {
         method: "PATCH",

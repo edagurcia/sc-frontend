@@ -2,15 +2,7 @@
 
 import { scFetch } from "@/lib/scFetch";
 import { revalidatePath } from "next/cache";
-
-export interface ToggleResidentStatusResponse {
-  message: string;
-  resident: {
-    id: string;
-    isActive: boolean;
-    updatedAt: string;
-  };
-}
+import { ToggleResidentStatusResponse } from "@/schemas";
 
 export async function toggleResidentStatusAction(
   id: string,

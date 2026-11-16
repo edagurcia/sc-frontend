@@ -2,12 +2,11 @@
 
 import { scFetch } from "@/lib/scFetch";
 import { revalidatePath } from "next/cache";
-import { UpdateResidentFormValues, Resident } from "@/schemas";
-
-export interface UpdateResidentResponse {
-  message: string;
-  resident: Resident;
-}
+import {
+  UpdateResidentFormValues,
+  Resident,
+  ResidentResponse,
+} from "@/schemas";
 
 export async function updateResidentAction(
   id: string,
@@ -19,7 +18,7 @@ export async function updateResidentAction(
   error?: string;
 }> {
   try {
-    const response = await scFetch<UpdateResidentResponse>(
+    const response = await scFetch<ResidentResponse>(
       `/api/v1/residents/${id}`,
       {
         method: "PUT",

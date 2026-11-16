@@ -2,12 +2,7 @@
 
 import { scFetch } from "@/lib/scFetch";
 import { revalidatePath } from "next/cache";
-import { ResidentFormValues, Resident } from "@/schemas";
-
-export interface CreateResidentResponse {
-  message: string;
-  resident: Resident;
-}
+import { ResidentFormValues, Resident, ResidentResponse } from "@/schemas";
 
 export async function createResidentAction(input: ResidentFormValues): Promise<{
   success: boolean;
@@ -16,14 +11,11 @@ export async function createResidentAction(input: ResidentFormValues): Promise<{
   error?: string;
 }> {
   try {
-    const response = await scFetch<CreateResidentResponse>(
-      "/api/v1/residents",
-      {
-        method: "POST",
-        body: JSON.stringify(input),
-        cache: "no-store",
-      },
-    );
+    const response = await scFetch<ResidentResponse>("/api/v1/residents", {
+      method: "POST",
+      body: JSON.stringify(input),
+      cache: "no-store",
+    });
 
     revalidatePath("/dashboard/residents");
 

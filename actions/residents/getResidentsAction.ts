@@ -1,21 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { Resident } from "@/schemas";
-
-export interface SecurityDevice {
-  id: string;
-  type: "card" | "tag" | string;
-  serial: string;
-  status: "active" | "inactive" | string;
-  issuedAt: string;
-}
-
-export interface ResidentsResponse {
-  residents: Resident[];
-  period?: string;
-  totalDebtors?: number;
-}
+import { Resident, ResidentsResponse } from "@/schemas";
 
 export async function getResidentsAction(
   communityId?: string,

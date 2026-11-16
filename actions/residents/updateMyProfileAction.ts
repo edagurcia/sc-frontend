@@ -1,12 +1,11 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { Resident, UpdateMyProfileFormValues } from "@/schemas";
-
-export interface UpdateMyProfileResponse {
-  message: string;
-  resident: Resident;
-}
+import {
+  Resident,
+  UpdateMyProfileFormValues,
+  ResidentResponse,
+} from "@/schemas";
 
 export async function updateMyResidentProfileAct(
   input: UpdateMyProfileFormValues,
@@ -17,7 +16,7 @@ export async function updateMyResidentProfileAct(
   error?: string;
 }> {
   try {
-    const response = await scFetch<UpdateMyProfileResponse>(
+    const response = await scFetch<ResidentResponse>(
       "/api/v1/resident-profile/me",
       {
         method: "PUT",

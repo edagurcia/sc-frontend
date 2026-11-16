@@ -83,10 +83,32 @@ export const reportDeviceSchema = z.object({
   newStatus: z.enum(["lost", "damaged"]),
 });
 
-// Tipos inferidos
+// Tipos inferidos desde Zod (Única fuente de verdad)
+export type SecurityDevice = z.infer<typeof securityDeviceSchema>;
 export type ResidentFormValues = z.infer<typeof residentSchema>;
 export const updateResidentSchema = residentSchema.partial();
 export type UpdateResidentFormValues = z.infer<typeof updateResidentSchema>;
 export type Resident = z.infer<typeof residentEntitySchema>;
 export type UpdateMyProfileFormValues = z.infer<typeof updateMyProfileSchema>;
 export type ReportDeviceInput = z.infer<typeof reportDeviceSchema>;
+
+// Contratos de respuesta de API
+export interface ResidentsResponse {
+  residents: Resident[];
+  period?: string;
+  totalDebtors?: number;
+}
+
+export interface ResidentResponse {
+  message: string;
+  resident: Resident;
+}
+
+export interface ToggleResidentStatusResponse {
+  message: string;
+  resident: {
+    id: string;
+    isActive: boolean;
+    updatedAt: string;
+  };
+}

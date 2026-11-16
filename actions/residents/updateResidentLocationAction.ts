@@ -2,12 +2,7 @@
 
 import { scFetch } from "@/lib/scFetch";
 import { revalidatePath } from "next/cache";
-import { Resident } from "@/schemas";
-
-export interface UpdateLocationResponse {
-  message: string;
-  resident: Resident;
-}
+import { Resident, ResidentResponse } from "@/schemas";
 
 export async function updateResidentLocationAction(
   id: string,
@@ -20,7 +15,7 @@ export async function updateResidentLocationAction(
   error?: string;
 }> {
   try {
-    const response = await scFetch<UpdateLocationResponse>(
+    const response = await scFetch<ResidentResponse>(
       `/api/v1/residents/${id}/location`,
       {
         method: "PUT",
