@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Edit, Power, Shield, MapPin, User } from "lucide-react";
+import { Edit, Power, MapPin, User, Cpu } from "lucide-react";
 import { Resident } from "@/schemas";
 
 interface Props {
@@ -57,17 +57,16 @@ export const AdminCrudActions = ({
       )}
 
       {/* Botón para gestionar dispositivos de seguridad */}
-      {onManageDevices && (
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-8 w-8 p-0 text-indigo-600 hover:bg-indigo-500/10"
-          onClick={() => onManageDevices(resident)}
-          title="Ver y gestionar dispositivos de seguridad"
-        >
-          <Shield className="h-4 w-4" />
-        </Button>
-      )}
+
+      <Button
+        size="sm"
+        variant="ghost"
+        className="h-8 w-8 p-0 text-green-600 hover:bg-indigo-500/10"
+        onClick={() => onManageDevices?.(resident)}
+        title="Ver y gestionar dispositivos de seguridad"
+      >
+        <Cpu className="h-4 w-4" />
+      </Button>
 
       {/* Botón de georreferenciación (Verde si tiene geo, Rojo si no tiene) */}
       <Button

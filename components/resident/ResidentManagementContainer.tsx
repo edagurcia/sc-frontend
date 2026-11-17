@@ -18,8 +18,9 @@ import { toggleResidentStatusAction } from "@/actions/residents/toggleResidentSt
 import { manageResidentUserAction } from "@/actions/residents/manageResidentUserAction";
 import { ResidentForm } from "./ResidentForm";
 import { ResidentUserAccessForm } from "./ResidentUserAccessForm";
+import { ResidentDevicesForm } from "./ResidentDevicesForm";
 
-type ModalMode = "create" | "edit" | "toggle" | "user";
+type ModalMode = "create" | "edit" | "toggle" | "user" | "devices";
 
 export const ResidentManagementContainer = () => {
   const queryClient = useQueryClient();
@@ -30,6 +31,8 @@ export const ResidentManagementContainer = () => {
   const [selectedResidentForToggle, setSelectedResidentForToggle] =
     useState<Resident | null>(null);
   const [selectedResidentForUser, setSelectedResidentForUser] =
+    useState<Resident | null>(null);
+  const [selectedResidentDevices, setSelectedResidentDevices] =
     useState<Resident | null>(null);
 
   // Query individual para obtener los datos frescos del residente al editar
@@ -131,6 +134,19 @@ export const ResidentManagementContainer = () => {
     }
   };
 
+  // 5. Gestionar dispositivos vinculado al residente
+  const handleSaveDevices = async (resident: Resident) => {
+    setSelectedResidentDevices(resident);
+    await queryClient.invalidateQueries({
+      queryKey: ["residents"],
+      exact: false,
+    });
+    await queryClient.refetchQueries({
+      queryKey: ["residents"],
+      exact: false,
+    });
+  };
+
   // Aperturas de modal
   const openCreateModal = () => {
     setSelectedId(null);
@@ -158,10 +174,18 @@ export const ResidentManagementContainer = () => {
     setIsOpen(true);
   };
 
+  const openDevicesModal = (resident: Resident) => {
+    setSelectedResidentDevices(resident);
+    setModalMode("devices");
+    setIsOpen(true);
+  };
+
   const getModalTitle = () => {
     if (modalMode === "create") return "Registrar Nuevo Residente";
     if (modalMode === "edit") return "Modificando datos de residente";
     if (modalMode === "user") return "Gestión de Usuario Asociado";
+    if (modalMode === "toggle") return "Cambio de estado del usuario";
+    if (modalMode === "devices") return "Dispositivos de acceso a la comunidad";
     return "Confirmar Cambio de Estado";
   };
 
@@ -169,6 +193,8 @@ export const ResidentManagementContainer = () => {
     if (modalMode === "create")
       return "Ingresa la información de la propiedad y el residente.";
     if (modalMode === "edit") return "Actualiza los campos necesarios.";
+    if (modalMode === "devices")
+      return "Administra los dispositivos de seguridad del residente.";
     if (modalMode === "user")
       return `Administrar cuenta de usuario para ${selectedResidentForUser?.fullName} (${selectedResidentForUser?.email || "Sin correo"})`;
     return `¿Estás seguro de cambiar el estado de ${selectedResidentForToggle?.fullName}?`;
@@ -188,6 +214,7 @@ export const ResidentManagementContainer = () => {
         onEdit={openEditModal}
         onToggleStatus={openToggleModal}
         onManageUser={openUserModal}
+        onManageDevices={openDevicesModal}
       />
 
       <Modal
@@ -197,6 +224,7 @@ export const ResidentManagementContainer = () => {
           setSelectedId(null);
           setSelectedResidentForToggle(null);
           setSelectedResidentForUser(null);
+          setSelectedResidentDevices(null);
         }}
         title={getModalTitle()}
         subtitle={getModalSubtitle()}
@@ -256,6 +284,17 @@ export const ResidentManagementContainer = () => {
             resident={selectedResidentForUser}
             onSavePassword={handleSaveUserPassword}
             onCancel={() => setIsOpen(false)}
+          />
+        )}
+
+        {modalMode === "devices" && selectedResidentDevices && (
+          <ResidentDevicesForm
+            resident={selectedResidentDevices}
+            onSuccess={handleSaveDevices}
+            onCancel={() => {
+              setIsOpen(false);
+              setSelectedResidentDevices(null);
+            }}
           />
         )}
       </Modal>
