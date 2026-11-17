@@ -3,6 +3,7 @@
 import { Building2, Users, ShieldCheck, Activity, Home } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SuperAdminMetricsResponse } from "@/schemas/community-schema";
+import { formatNumber } from "@/utils/formatters";
 
 interface SuperAdminMetricsProps {
   metrics: SuperAdminMetricsResponse;
@@ -38,7 +39,7 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
               <p className="text-xs text-muted-foreground mt-0.5">
                 Monitoreo general de{" "}
                 <span className="font-semibold text-foreground bg-muted/60 px-2 py-0.5 rounded-md border border-border/40">
-                  {kpis.communities.total} comunidades registradas
+                  {formatNumber(kpis.communities.total)} comunidades registradas
                 </span>
               </p>
             </div>
@@ -61,15 +62,15 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
           <CardContent>
             <div className="flex items-center justify-between gap-2">
               <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                {kpis.communities.total}
+                {formatNumber(kpis.communities.total)}
               </span>
               <div className="flex items-center gap-1.5 text-xs">
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                  {kpis.communities.active} activas
+                  {formatNumber(kpis.communities.active)} activas
                 </span>
                 {kpis.communities.inactive > 0 && (
                   <span className="font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded">
-                    {kpis.communities.inactive} inactivas
+                    {formatNumber(kpis.communities.inactive)} inactivas
                   </span>
                 )}
               </div>
@@ -90,15 +91,15 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
           <CardContent>
             <div className="flex items-center justify-between gap-2">
               <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                {kpis.users.total}
+                {formatNumber(kpis.users.total)}
               </span>
               <div className="flex items-center gap-1.5 text-xs">
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                  {kpis.users.active} activos
+                  {formatNumber(kpis.users.active)} activos
                 </span>
                 {kpis.users.inactive > 0 && (
                   <span className="font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
-                    {kpis.users.inactive} inactivos
+                    {formatNumber(kpis.users.inactive)} inactivos
                   </span>
                 )}
               </div>
@@ -119,7 +120,7 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
           <CardContent>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                {totalResidentsGlobal}
+                {formatNumber(totalResidentsGlobal)}
               </span>
               <span className="text-xs text-muted-foreground">
                 propiedades registradas
@@ -141,7 +142,7 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
           <CardContent>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-extrabold tracking-tight text-foreground">
-                {activeCommunitiesPercentage}%
+                {formatNumber(activeCommunitiesPercentage)}%
               </span>
               <span className="text-xs text-muted-foreground">
                 operacionales
