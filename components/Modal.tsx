@@ -21,6 +21,20 @@ export const Modal = ({
   children,
   className,
 }: ModalProps) => {
+  // Bloquear el scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    // Limpieza al desmontar o cerrar
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   // Manejo de la tecla Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

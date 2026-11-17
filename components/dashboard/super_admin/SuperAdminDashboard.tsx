@@ -1,81 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Loader2, Users, DollarSign, Percent, ShieldAlert } from "lucide-react";
-import {
-  getDashboardMetricsAction,
-  DashboardMetricsResponse,
-} from "@/actions/dashboard";
+import { useState } from "react";
+import { AlertCircle, ShieldAlert } from "lucide-react";
+import { useSuperAdminMetrics } from "@/hooks/useSuperAdminMetrics";
+import { SuperAdminMetrics } from "./SuperAdminMetrics";
+import { CommunitiesList } from "./CommunitiesList";
+import { CommunitiesOverviewMap } from "./CommunitiesOverviewMap";
+import { CommunityResidentsModal } from "./CommunityResidentsModal";
+import { CommunityResponse } from "@/schemas/community-schema";
 
 export const SuperAdminDashboard = () => {
-  const [metrics, setMetrics] = useState<DashboardMetricsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: metrics, isLoading, error } = useSuperAdminMetrics();
 
-  useEffect(() => {
-    getDashboardMetricsAction().then((res) => {
-      if (res.success && res.data) {
-        setMetrics(res.data);
-      } else {
-        setError(res.error || "Error al cargar métricas globales");
-      }
-      setLoading(false);
-    });
-  }, []);
+  // Estados para controlar el modal de residentes
+  const [selectedCommunity, setSelectedCommunity] =
+    useState<CommunityResponse | null>(null);
+  const [isResidentsModalOpen, setIsResidentsModalOpen] = useState(false);
 
-  if (loading) {
+  if (error || (!isLoading && !metrics)) {
     return (
-      <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="rounded-xl border border-destructive/25 bg-destructive/10 p-4 text-destructive flex items-center gap-3 text-sm">
+        <AlertCircle className="h-5 w-5 shrink-0" />
+        <span>
+          {error?.message || "Error al cargar la información del panel global."}
+        </span>
       </div>
     );
   }
 
-  if (error) {
-    return <div className="text-destructive text-sm p-4">Error: {error}</div>;
-  }
+  const communities = metrics?.communities ?? [];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="space-y-6 pb-8">
+      {/* Cabecera / Título */}
       <div className="flex items-center gap-2 px-1 text-sm font-medium text-muted-foreground">
         <ShieldAlert className="h-4 w-4 text-blue-600" />
         <span>Panel Global del Sistema (Super Admin)</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="flex items-center gap-4 p-4 rounded-xl border bg-card shadow-2xs">
-          <Users className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-          <div>
-            <p className="text-sm text-muted-foreground">
-              Total Residentes Globales
-            </p>
-            <p className="text-2xl font-bold">{metrics?.totalResidents}</p>
-          </div>
-        </div>
+      {/* KPIs Globales */}
+      <SuperAdminMetrics
+        metrics={
+          metrics ?? {
+            kpis: {
+              communities: { total: 0, active: 0, inactive: 0 },
+              users: { total: 0, active: 0, inactive: 0 },
+            },
+            communities: [],
+          }
+        }
+      />
 
-        <div className="flex items-center gap-4 p-4 rounded-xl border bg-card shadow-2xs">
-          <DollarSign className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-          <div>
-            <p className="text-sm text-muted-foreground">Recaudación General</p>
-            <p className="text-xl font-bold">
-              ${metrics?.totalCollectedAmount}{" "}
-              <span className="text-xs text-muted-foreground">
-                / ${metrics?.totalExpectedAmount}
-              </span>
-            </p>
-          </div>
-        </div>
+      {/* 1. Mapa General de Cobertura (Todos los polígonos) */}
+      <CommunitiesOverviewMap communities={communities} />
 
-        <div className="flex items-center gap-4 p-4 rounded-xl border bg-card shadow-2xs">
-          <Percent className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
-          <div>
-            <p className="text-sm text-muted-foreground">Eficiencia de Cobro</p>
-            <p className="text-2xl font-bold">
-              {metrics?.collectionPercentage}%
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* 2. Tabla de Comunidades */}
+      <CommunitiesList
+        communities={communities}
+        isLoading={isLoading}
+        // Eliminamos la edición de la tabla principal y la redirigimos o reemplazamos por Ver Residentes
+        onViewResidents={(community) => {
+          setSelectedCommunity(community);
+          setIsResidentsModalOpen(true);
+        }}
+        onToggleStatus={(community) => console.log("Toggle:", community.name)}
+        onViewMap={(community) => console.log("Ver Mapa:", community.name)}
+      />
+
+      {/* 3. Modal de Directorio de Residentes por Comunidad */}
+      <CommunityResidentsModal
+        community={selectedCommunity}
+        open={isResidentsModalOpen}
+        onOpenChange={setIsResidentsModalOpen}
+      />
     </div>
   );
 };

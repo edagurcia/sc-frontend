@@ -26,6 +26,27 @@ export interface CommunityResponse {
   allowUserCreation: boolean;
   isActive: boolean;
   createdAt: string;
+  residentsCount?: number;
+  adminName?: string | null;
+  adminEmail?: string | null;
 }
 
 export type Community = CommunityResponse;
+
+export const superAdminMetricsSchema = z.object({
+  kpis: z.object({
+    communities: z.object({
+      total: z.number(),
+      active: z.number(),
+      inactive: z.number(),
+    }),
+    users: z.object({
+      total: z.number(),
+      active: z.number(),
+      inactive: z.number(),
+    }),
+  }),
+  communities: z.array(z.custom<CommunityResponse>()),
+});
+
+export type SuperAdminMetricsResponse = z.infer<typeof superAdminMetricsSchema>;
