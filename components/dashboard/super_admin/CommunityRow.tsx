@@ -9,9 +9,14 @@ import { CommunityResponse } from "@/schemas/community-schema";
 interface CommunityRowProps {
   community: CommunityResponse;
   actions?: ReactNode;
+  onOpenResidents?: () => void;
 }
 
-export const CommunityRow = ({ community, actions }: CommunityRowProps) => {
+export const CommunityRow = ({
+  community,
+  actions,
+  onOpenResidents,
+}: CommunityRowProps) => {
   return (
     <TableRow>
       <TableCell className="font-bold flex items-center gap-2.5">
@@ -37,7 +42,6 @@ export const CommunityRow = ({ community, actions }: CommunityRowProps) => {
         </div>
       </TableCell>
 
-      {/* Nueva Columna: Community Admin */}
       <TableCell>
         {community.adminName || community.adminEmail ? (
           <div className="flex items-center gap-2 text-xs">
@@ -60,10 +64,16 @@ export const CommunityRow = ({ community, actions }: CommunityRowProps) => {
         )}
       </TableCell>
 
+      {/* Residentes interactivo */}
       <TableCell className="text-center">
-        <span className="bg-muted px-2.5 py-1 rounded-md font-medium text-foreground text-xs">
+        <button
+          type="button"
+          onClick={onOpenResidents}
+          title="Ver listado de residentes"
+          className="inline-flex items-center justify-center bg-muted px-2.5 py-1 rounded-md font-medium text-foreground text-xs hover:bg-primary/15 hover:text-primary transition-colors cursor-pointer"
+        >
           👥 {community.residentsCount ?? 0}
-        </span>
+        </button>
       </TableCell>
 
       <TableCell className="text-center">

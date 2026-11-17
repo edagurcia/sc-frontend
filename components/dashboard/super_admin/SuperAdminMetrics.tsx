@@ -81,7 +81,7 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
         <Card className="border-border/60 shadow-xs hover:border-border/80 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Usuarios SaaS
+              Usuarios SmartCommunity
             </CardTitle>
             <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
               <Users className="h-4 w-4" />
@@ -110,7 +110,7 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
         <Card className="border-border/60 shadow-xs hover:border-border/80 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Residentes Globales
+              Residentes
             </CardTitle>
             <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <Home className="h-4 w-4" />
@@ -132,7 +132,7 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
         <Card className="border-border/60 shadow-xs hover:border-border/80 transition-colors">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Tasa Operativa
+              Comunidades Activas
             </CardTitle>
             <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
               <Activity className="h-4 w-4" />
@@ -144,7 +144,7 @@ export const SuperAdminMetrics = ({ metrics }: SuperAdminMetricsProps) => {
                 {activeCommunitiesPercentage}%
               </span>
               <span className="text-xs text-muted-foreground">
-                comunidades activas
+                operacionales
               </span>
             </div>
           </CardContent>

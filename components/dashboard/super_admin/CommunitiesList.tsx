@@ -17,6 +17,7 @@ import {
 import { CommunityResponse } from "@/schemas/community-schema";
 import { CommunityRow } from "./CommunityRow";
 import { CommunityCrudActions } from "./CommunityCrudActions";
+import { CommunityResidentsModal } from "./CommunityResidentsModal";
 
 interface CommunitiesListProps {
   communities: CommunityResponse[];
@@ -33,7 +34,6 @@ export const CommunitiesList = ({
   isLoading,
   onViewResidents,
   onToggleStatus,
-  onViewMap,
 }: CommunitiesListProps) => {
   const [filterText, setFilterText] = useState("");
 
@@ -44,7 +44,7 @@ export const CommunitiesList = ({
     (state) => state.pageSize[ENTITY_KEY] ?? 10,
   );
 
-  const { dataSet: filteredCommunities } = useSearch({
+  const { dataSet: filteredCommunities } = useSearch<CommunityResponse>({
     data: communities,
     text: filterText,
   });
@@ -93,6 +93,7 @@ export const CommunitiesList = ({
             <TableRow>
               <TableHead>Comunidad</TableHead>
               <TableHead>Ubicación</TableHead>
+              <TableHead>Administrador</TableHead>
               <TableHead className="text-center">Residentes</TableHead>
               <TableHead className="text-center">Estado</TableHead>
               <TableHead className="text-right">Acciones</TableHead>
@@ -102,7 +103,7 @@ export const CommunitiesList = ({
             {paginatedCommunities.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No se encontraron comunidades registradas.
@@ -113,7 +114,6 @@ export const CommunitiesList = ({
                 const actionsNode = (
                   <CommunityCrudActions
                     community={community}
-                    onViewResidents={() => onViewResidents(community)}
                     onToggleStatus={() => onToggleStatus(community)}
                   />
                 );
@@ -123,6 +123,7 @@ export const CommunitiesList = ({
                     key={community.id}
                     community={community}
                     actions={actionsNode}
+                    onOpenResidents={() => onViewResidents(community)}
                   />
                 );
               })
