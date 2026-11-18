@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "next-themes";
 import { CommunityMapResponse } from "@/actions/dashboard/getCommunityMapAction";
-import { Home, Phone, User, Layers, MapPin, Loader2 } from "lucide-react";
+import { MapPin, Building2, Loader2 } from "lucide-react";
 import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface CommunityMapProps {
   data: CommunityMapResponse;
@@ -23,10 +24,10 @@ export function CommunityMap({ data }: CommunityMapProps) {
   useEffect(() => {
     if (!isMounted || !mapContainerRef.current) return;
 
+    const defaultCenter: [number, number] = [14.0723, -87.2072];
+
     // 1. Inicializar el mapa nativo si no existe
     if (!mapInstanceRef.current) {
-      const defaultCenter: [number, number] = [14.0723, -87.2072];
-
       const map = L.map(mapContainerRef.current, {
         center: defaultCenter,
         zoom: 15,
@@ -43,53 +44,45 @@ export function CommunityMap({ data }: CommunityMapProps) {
 
     const map = mapInstanceRef.current;
 
-    // 2. Limpiar marcadores anteriores antes de volver a pintar
+    // 2. Limpiar capas anteriores (polígonos o marcadores)
     map.eachLayer((layer) => {
-      if (layer instanceof L.Marker) {
+      if (layer instanceof L.Polygon || layer instanceof L.Marker) {
         map.removeLayer(layer);
       }
     });
 
-    // 3. Configurar iconos de Leaflet
-    const defaultIcon = L.icon({
-      iconRetinaUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-      iconUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-      shadowUrl:
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34],
-    });
+    const community = data.community;
 
-    const defaultCenter: [number, number] = [14.0723, -87.2072];
+    // 3. Renderizar el polígono de la comunidad si existe
+    if (community?.polygon) {
+      try {
+        const parsedPolygon = JSON.parse(community.polygon);
+        if (Array.isArray(parsedPolygon) && parsedPolygon.length > 0) {
+          const polygonLayer = L.polygon(parsedPolygon, {
+            color: "#2563eb",
+            fillColor: "#3b82f6",
+            fillOpacity: 0.35,
+            weight: 2,
+          }).addTo(map);
 
-    // 4. Agregar marcadores dinámicamente
-    data.residents.forEach((resident) => {
-      // Verificación de seguridad por si acaso llega algún registro sin coordenadas
-      if (!resident.latitude || !resident.longitude) return;
+          const popupContent = `
+            <div style="font-family: inherit; font-size: 12px; line-height: 1.4; min-width: 160px;">
+              <strong>${community.name}</strong><br/>
+              <span style="color: #64748b;">${community.municipality}, ${community.department}</span>
+            </div>
+          `;
 
-      const lat = parseFloat(resident.latitude);
-      const lng = parseFloat(resident.longitude);
+          polygonLayer.bindPopup(popupContent);
 
-      if (isNaN(lat) || isNaN(lng)) return;
+          // Centrar automáticamente el mapa en el polígono de la comunidad
+          map.fitBounds(polygonLayer.getBounds(), { padding: [50, 50] });
+        }
+      } catch (error) {
+        console.error("Error al parsear el polígono de la comunidad:", error);
+      }
+    }
 
-      const popupContent = `
-        <div style="font-family: inherit; font-size: 12px; line-height: 1.4;">
-          <strong>Casa ${resident.houseNumber || "S/N"}</strong><br/>
-          👤 ${resident.fullName}<br/>
-          📞 ${resident.phone}<br/>
-          <em>Ref: ${resident.reference || resident.address}</em>
-        </div>
-      `;
-
-      L.marker([lat, lng], { icon: defaultIcon })
-        .addTo(map)
-        .bindPopup(popupContent);
-    });
-
-    // 5. Cleanup al desmontar o actualizar
+    // 4. Cleanup al desmontar
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -100,7 +93,7 @@ export function CommunityMap({ data }: CommunityMapProps) {
 
   if (!isMounted) {
     return (
-      <div className="flex h-96 w-full items-center justify-center rounded-2xl border border-border/60 bg-card text-muted-foreground gap-2 shadow-2xs">
+      <div className="flex h-105 w-full items-center justify-center rounded-2xl border border-border/60 bg-card text-muted-foreground gap-2 shadow-2xs">
         <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
         <span>Cargando mapa interactivo...</span>
       </div>
@@ -115,7 +108,7 @@ export function CommunityMap({ data }: CommunityMapProps) {
         <div>
           <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
             <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            Mapa Geográfico - {data.community.name}
+            Polígono Territorial - {data.community.name}
           </h3>
           <p className="text-xs text-muted-foreground">
             {data.community.address} ({data.community.municipality},{" "}
@@ -123,13 +116,15 @@ export function CommunityMap({ data }: CommunityMapProps) {
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-medium bg-muted px-3 py-1.5 rounded-lg self-start text-foreground">
-          <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-          <span>{data.residents.length} propiedades registradas</span>
+          <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <span>Delimitación oficial activa</span>
         </div>
       </div>
 
       <div
-        className={`relative h-112.5 w-full overflow-hidden rounded-xl border border-border ${isDark ? "dark-map" : ""}`}
+        className={`relative h-105 w-full overflow-hidden rounded-xl border border-border ${
+          isDark ? "dark-map" : ""
+        }`}
       >
         <div
           ref={mapContainerRef}

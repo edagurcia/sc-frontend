@@ -10,7 +10,10 @@ import {
   Megaphone,
   Trash2,
   Check,
+  UserCheck,
+  Loader2,
 } from "lucide-react";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,74 +22,41 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-interface NotificationItem {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  type: "payment" | "security" | "announcement" | "info" | string;
-  isRead: boolean;
-  createdAt: string;
-}
-
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif123-e89b-12d3-a456-426614174000",
-    userId: "usr12345-e89b-12d3-a456-426614174888",
-    title: "Nuevo cargo generado",
-    message:
-      "Se ha generado la cuota de mantenimiento para el periodo Noviembre 2026.",
-    type: "payment",
-    isRead: false,
-    createdAt: "2026-11-06T00:00:00.000Z",
-  },
-  {
-    id: "notif124-e89b-12d3-a456-426614174001",
-    userId: "usr12345-e89b-12d3-a456-426614174888",
-    title: "Dispositivo registrado",
-    message: "Su tarjeta RFID (RFID-88990011) ha sido vinculada correctamente.",
-    type: "security",
-    isRead: false,
-    createdAt: "2026-11-05T14:30:00.000Z",
-  },
-  {
-    id: "notif125-e89b-12d3-a456-426614174002",
-    userId: "usr12345-e89b-12d3-a456-426614174888",
-    title: "Mantenimiento general",
-    message:
-      "Este domingo se realizará mantenimiento en el portón principal de acceso.",
-    type: "announcement",
-    isRead: true,
-    createdAt: "2026-11-04T09:15:00.000Z",
-  },
-];
-
 export const Notifications = () => {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(
-    INITIAL_NOTIFICATIONS,
-  );
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleMarkAsRead = (id: string, e: React.MouseEvent) => {
+  const {
+    notifications,
+    isLoading,
+    markAsRead,
+    isMarkingRead,
+    markAllAsRead,
+    isMarkingAllRead,
+    deleteNotification,
+    isDeleting,
+  } = useNotifications();
+
+  const handleMarkAsRead = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, isRead: true } : item)),
-    );
+    await markAsRead(id);
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) => prev.map((item) => ({ ...item, isRead: true })));
+  const handleMarkAllAsRead = async () => {
+    await markAllAsRead();
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotifications((prev) => prev.filter((item) => item.id !== id));
+    await deleteNotification(id);
   };
 
   const getIconByType = (type: string) => {
     switch (type) {
       case "payment":
         return <CreditCard className="h-4 w-4 text-emerald-500" />;
+      case "visit":
+        return <UserCheck className="h-4 w-4 text-sky-500" />;
+      case "alert":
       case "security":
         return <ShieldAlert className="h-4 w-4 text-amber-500" />;
       case "announcement":
@@ -104,9 +74,16 @@ export const Notifications = () => {
           variant: "default" as const,
           className: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
         };
+      case "visit":
+        return {
+          label: "Visita",
+          variant: "default" as const,
+          className: "bg-sky-500/10 text-sky-600 border-sky-500/20",
+        };
+      case "alert":
       case "security":
         return {
-          label: "Seguridad",
+          label: "Alerta",
           variant: "default" as const,
           className: "bg-amber-500/10 text-amber-600 border-amber-500/20",
         };
@@ -160,17 +137,26 @@ export const Notifications = () => {
             <Button
               variant="ghost"
               size="sm"
+              disabled={isMarkingAllRead}
               onClick={handleMarkAllAsRead}
               className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground p-0 cursor-pointer"
             >
-              <CheckCheck className="h-3.5 w-3.5" />
+              {isMarkingAllRead ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CheckCheck className="h-3.5 w-3.5" />
+              )}
               Marcar leídas
             </Button>
           )}
         </div>
 
         <div className="flex flex-col max-h-95 overflow-y-auto divide-y divide-border/40">
-          {notifications.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center h-36">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-36 text-center text-muted-foreground p-4">
               <Bell className="h-7 w-7 opacity-30 mb-2" />
               <p className="text-xs font-medium">
@@ -224,6 +210,7 @@ export const Notifications = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        disabled={isMarkingRead}
                         className="h-7 w-7 text-muted-foreground hover:text-foreground cursor-pointer"
                         onClick={(e) => handleMarkAsRead(notif.id, e)}
                         title="Marcar como leída"
@@ -236,6 +223,7 @@ export const Notifications = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        disabled={isDeleting}
                         className="h-7 w-7 text-muted-foreground hover:text-destructive cursor-pointer"
                         onClick={(e) => handleDelete(notif.id, e)}
                         title="Eliminar notificación leída"
