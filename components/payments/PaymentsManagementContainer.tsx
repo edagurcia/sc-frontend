@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import { PaymentHistoryItem, Resident } from "@/schemas";
@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 type ModalMode = "create" | "edit" | "detail" | null;
 
 export const PaymentsManagementContainer = () => {
-  const { data: payments = [] } = usePayments();
+  usePayments();
   const { data: residents = [], isLoading: isLoadingResidents } =
     useResidents();
 
@@ -72,57 +72,48 @@ export const PaymentsManagementContainer = () => {
   };
 
   const handleDownloadReceipt = (payment: PaymentHistoryItem) => {
-    const groupedRecords = payments.filter(
-      (item) =>
-        item.receiptNumber === payment.receiptNumber &&
-        item.resident.id === payment.resident.id,
+    const periods = [...(payment.periods ?? [])].sort((a, b) =>
+      a.localeCompare(b),
     );
+    const totalAmount = Number(payment.amount) || 0;
+    const count = periods.length > 0 ? periods.length : 1;
+    const unitAmount = (totalAmount / count).toFixed(2);
 
-    const recordsToUse = groupedRecords.length > 0 ? groupedRecords : [payment];
-    const sortedRecords = [...recordsToUse].sort((a, b) =>
-      a.period.localeCompare(b.period),
-    );
-
-    const periods = sortedRecords.map((item) => item.period);
-    const periodAmounts = sortedRecords.map((item) => ({
-      period: item.period,
-      amount: item.amount,
+    const periodAmounts = periods.map((period) => ({
+      period,
+      amount: unitAmount,
     }));
 
-    const totalAmount = sortedRecords.reduce((acc, item) => {
-      const val = Number(item.amount);
-      return acc + (Number.isNaN(val) ? 0 : val);
-    }, 0);
-
-    const firstRecord = sortedRecords[0];
-    const combinedNotes = Array.from(
-      new Set(
-        sortedRecords
-          .map((item) => item.notes?.trim())
-          .filter((note): note is string => Boolean(note)),
-      ),
-    ).join(" | ");
-
     const residentForReceipt: Resident = {
-      id: firstRecord.resident.id,
-      fullName: firstRecord.resident.fullName,
-      houseNumber: firstRecord.resident.houseNumber,
-      monthlyFee: String(totalAmount),
+      id: payment.resident.id,
+      fullName: payment.resident.fullName,
+      houseNumber: payment.resident.houseNumber,
+      monthlyFee: unitAmount,
     } as Resident;
 
     generatePaymentReceiptPdf({
       resident: residentForReceipt,
-      receiptNumber: firstRecord.receiptNumber,
+      receiptNumber: payment.receiptNumber,
       periods,
       periodAmounts,
-      paymentMethod: firstRecord.paymentMethod,
+      paymentMethod: payment.paymentMethod,
       totalAmount,
-      notes: combinedNotes || undefined,
-      issuedAt: firstRecord.createdAt,
+      notes: payment.notes ?? undefined,
+      issuedAt: payment.createdAt,
     });
 
-    toast.success(`Recibo ${firstRecord.receiptNumber} descargado`);
+    toast.success(`Recibo ${payment.receiptNumber} descargado`);
   };
+
+  const detailPeriods = useMemo(() => {
+    const basePeriods = selectedPayment?.periods ?? [];
+    const extraPeriod = paymentDetail?.period;
+    const merged = new Set<string>(basePeriods);
+    if (extraPeriod) {
+      merged.add(extraPeriod);
+    }
+    return Array.from(merged).sort((a, b) => a.localeCompare(b));
+  }, [selectedPayment?.periods, paymentDetail?.period]);
 
   const getModalTitle = () => {
     if (modalMode === "create") return "Registrar Cobro";
@@ -263,14 +254,20 @@ export const PaymentsManagementContainer = () => {
             ) : (
               <>
                 <div className="rounded-lg border border-border/60 bg-muted/20 p-3 space-y-1.5">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Recibo:</span>
+                    <span className="font-mono font-semibold text-foreground">
+                      {selectedPayment.receiptNumber}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-2">
                     <span className="text-muted-foreground">Residente:</span>
-                    <span className="font-semibold text-foreground">
+                    <span className="font-semibold text-right text-foreground">
                       {paymentDetail?.resident.fullName ??
                         selectedPayment.resident.fullName}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <span className="text-muted-foreground">Casa:</span>
                     <span className="font-medium text-foreground">
                       {paymentDetail?.resident.houseNumber ??
@@ -278,17 +275,30 @@ export const PaymentsManagementContainer = () => {
                         "S/N"}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Período:</span>
-                    <span className="font-mono text-foreground">
-                      {paymentDetail?.period ?? selectedPayment.period}
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">
+                      Mes(es) pagado(s):
+                    </span>
+                    <span className="font-mono text-right text-foreground">
+                      {detailPeriods.length > 0
+                        ? detailPeriods.join(", ")
+                        : "Sin período"}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Monto:</span>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">
+                      Método de pago:
+                    </span>
+                    <span className="capitalize font-medium text-foreground">
+                      {paymentDetail?.paymentMethod ??
+                        selectedPayment.paymentMethod}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">Monto total:</span>
                     <span className="font-bold text-emerald-700 dark:text-emerald-400">
                       {formatCurrency(
-                        paymentDetail?.amount ?? selectedPayment.amount,
+                        selectedPayment.amount ?? paymentDetail?.amount ?? 0,
                       )}
                     </span>
                   </div>

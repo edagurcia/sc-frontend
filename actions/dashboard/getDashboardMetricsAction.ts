@@ -32,8 +32,7 @@ export async function getDashboardMetricsAction(): Promise<{
       "/api/v1/dashboard/metrics",
       {
         method: "GET",
-
-        next: { revalidate: 60 },
+        cache: "no-store",
       },
     );
 

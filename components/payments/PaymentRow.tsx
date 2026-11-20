@@ -74,9 +74,16 @@ export const PaymentRow = ({ payment, actions }: PaymentRowProps) => {
         </div>
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-1.5 text-xs font-mono text-foreground">
-          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-          <span>{payment.period}</span>
+        <div className="flex flex-col gap-0.5">
+          <div className="flex items-center gap-1.5 text-xs font-mono font-medium text-foreground">
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <span className="truncate">{payment.periods.join(", ")}</span>
+          </div>
+          <span className="text-[11px] text-muted-foreground">
+            {payment.periods.length > 1
+              ? `Pagó ${payment.periods.length} meses`
+              : `Mes pagado: ${payment.periods[0] ?? ""}`}
+          </span>
         </div>
       </TableCell>
       <TableCell>{getMethodBadge(payment.paymentMethod)}</TableCell>

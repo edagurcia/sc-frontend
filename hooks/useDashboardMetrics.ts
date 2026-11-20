@@ -13,6 +13,6 @@ export function useDashboardMetrics() {
       }
       return res.data;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos de caché
+    staleTime: 0,
   });
 }

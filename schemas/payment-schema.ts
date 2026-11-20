@@ -86,8 +86,9 @@ export interface PaymentHistoryResident {
 
 export interface PaymentHistoryItem {
   id: string;
+  paymentIds?: string[];
   receiptNumber: string;
-  period: string;
+  periods: string[];
   amount: string;
   paymentMethod: PaymentMethod;
   notes: string | null;
