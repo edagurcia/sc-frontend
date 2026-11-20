@@ -78,25 +78,22 @@ export const PaymentForm = ({
         .map((item) => item.period),
     );
 
-    const items: SelectablePeriodItem[] = unpaid.map((item) => ({
-      period: item.period,
-      amount: item.amount ?? unitFeeString,
-      isAdvance: false,
-    }));
+    const items: SelectablePeriodItem[] = unpaid
+      .filter((item) => !paidSet.has(item.period))
+      .map((item) => ({
+        period: item.period,
+        amount: item.amount ?? unitFeeString,
+        isAdvance: false,
+      }));
 
     const existingSet = new Set(items.map((i) => i.period));
 
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
-    const currentPeriodStr = formatPeriod(currentYear, currentMonth);
-
-    const lastUnpaid = unpaid[unpaid.length - 1]?.period;
+    const lastUnpaid = items[items.length - 1]?.period;
     const lastStatement =
       statementData?.statement?.[statementData.statement.length - 1]?.period;
 
-    const anchorPeriod = lastUnpaid || lastStatement || currentPeriodStr;
-    const parsedAnchor = parsePeriod(anchorPeriod);
+    const anchorPeriod = lastUnpaid || lastStatement;
+    const parsedAnchor = anchorPeriod ? parsePeriod(anchorPeriod) : null;
 
     if (parsedAnchor) {
       const targetYear = parsedAnchor.year;
@@ -114,20 +111,6 @@ export const PaymentForm = ({
           existingSet.add(candidate);
         }
         m += 1;
-      }
-
-      if (
-        !existingSet.has(currentPeriodStr) &&
-        !paidSet.has(currentPeriodStr)
-      ) {
-        const parsedCurrent = parsePeriod(currentPeriodStr);
-        if (parsedCurrent && parsedCurrent.year === targetYear) {
-          items.push({
-            period: currentPeriodStr,
-            amount: unitFeeString,
-            isAdvance: false,
-          });
-        }
       }
     }
 
@@ -205,10 +188,21 @@ export const PaymentForm = ({
         residentId: resident.id,
       });
 
+      const periodAmounts = values.periods.map((periodCode) => {
+        const found = selectablePeriods.find(
+          (item) => item.period === periodCode,
+        );
+        return {
+          period: periodCode,
+          amount: found?.amount ?? unitFeeString,
+        };
+      });
+
       generatePaymentReceiptPdf({
         resident,
         receiptNumber: values.receiptNumber,
         periods: values.periods,
+        periodAmounts,
         paymentMethod: values.paymentMethod,
         totalAmount: res.data?.totalAmount ?? calculatedTotal,
         notes: values.notes,
