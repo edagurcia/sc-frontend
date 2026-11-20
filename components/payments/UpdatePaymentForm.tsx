@@ -83,6 +83,11 @@ export const UpdatePaymentForm = ({
     }
   };
 
+  const formattedPeriods =
+    payment.periods && payment.periods.length > 0
+      ? payment.periods.join(", ")
+      : "—";
+
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
@@ -94,7 +99,7 @@ export const UpdatePaymentForm = ({
           {payment.resident.houseNumber || "S/N"}
         </p>
         <p className="text-muted-foreground font-mono mt-0.5">
-          Período: {payment.period}
+          Período(s): {formattedPeriods}
         </p>
       </div>
 
