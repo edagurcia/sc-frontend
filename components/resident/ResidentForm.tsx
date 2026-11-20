@@ -24,6 +24,17 @@ interface ResidentFormProps {
   onCancel: () => void;
 }
 
+const toDateInputValue = (dateInput?: string | Date | null): string => {
+  if (!dateInput) {
+    return new Date().toISOString().split("T")[0];
+  }
+  const parsed = new Date(dateInput);
+  if (Number.isNaN(parsed.getTime())) {
+    return new Date().toISOString().split("T")[0];
+  }
+  return parsed.toISOString().split("T")[0];
+};
+
 export const ResidentForm = ({
   initialData,
   onSubmit,
@@ -56,6 +67,7 @@ export const ResidentForm = ({
       emergencyContact: "",
       avatarUrl: "",
       monthlyFee: 500,
+      billingStartDate: toDateInputValue(),
       hasCistern: false,
       floorsCount: 1,
       hasGarage: false,
@@ -83,6 +95,7 @@ export const ResidentForm = ({
         monthlyFee: initialData.monthlyFee
           ? Number(initialData.monthlyFee)
           : 500,
+        billingStartDate: toDateInputValue(initialData.billingStartDate),
         hasCistern: Boolean(initialData.hasCistern),
         floorsCount: initialData.floorsCount
           ? Number(initialData.floorsCount)
@@ -101,6 +114,29 @@ export const ResidentForm = ({
           status: device.status === "inactive" ? "inactive" : "active",
           issuedAt: device.issuedAt,
         })),
+      });
+    } else {
+      reset({
+        dni: "",
+        fullName: "",
+        email: "",
+        phone: "",
+        address: "",
+        reference: "",
+        houseNumber: "",
+        street: "",
+        avenue: "",
+        tenureType: "Propia",
+        emergencyContact: "",
+        avatarUrl: "",
+        monthlyFee: 500,
+        billingStartDate: toDateInputValue(),
+        hasCistern: false,
+        floorsCount: 1,
+        hasGarage: false,
+        adultsCount: 1,
+        minorsCount: 0,
+        securityDevices: [],
       });
     }
   }, [initialData, reset]);
@@ -254,8 +290,8 @@ export const ResidentForm = ({
         </div>
       </div>
 
-      {/* Tenencia (Shadcn Select) y Cuota */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Tenencia (Shadcn Select), Cuota e Inicio de Cobro */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="tenureType">Tipo de Tenencia *</Label>
           <Controller
@@ -297,6 +333,20 @@ export const ResidentForm = ({
           {errors.monthlyFee && (
             <span className="text-xs text-destructive">
               {errors.monthlyFee.message}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="billingStartDate">Fecha Inicio de Cobro *</Label>
+          <Input
+            id="billingStartDate"
+            type="date"
+            {...register("billingStartDate")}
+          />
+          {errors.billingStartDate && (
+            <span className="text-xs text-destructive">
+              {errors.billingStartDate.message}
             </span>
           )}
         </div>

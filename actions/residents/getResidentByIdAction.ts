@@ -1,15 +1,13 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { Resident } from "@/schemas";
+import { ResidentDetailResponse, UnpaidPeriod } from "@/schemas";
 
-export interface ResidentDetailResponse {
-  resident: Resident;
-}
+export type { ResidentDetailResponse, UnpaidPeriod };
 
 export async function getResidentByIdAction(id: string): Promise<{
   success: boolean;
-  data?: Resident;
+  data?: ResidentDetailResponse;
   error?: string;
 }> {
   try {
@@ -27,7 +25,11 @@ export async function getResidentByIdAction(id: string): Promise<{
 
     return {
       success: true,
-      data: response.resident,
+      data: {
+        resident: response.resident,
+        unpaidPeriods: response.unpaidPeriods ?? [],
+        totalDebt: response.totalDebt ?? "0.00",
+      },
     };
   } catch (error) {
     console.error(`Error al obtener el residente con ID ${id}:`, error);

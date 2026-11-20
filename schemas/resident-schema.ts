@@ -36,6 +36,10 @@ export const residentSchema = z.object({
     .or(z.literal("")),
 
   monthlyFee: z.coerce.number().positive("La cuota mensual debe ser mayor a 0"),
+  billingStartDate: z
+    .string()
+    .min(1, "La fecha de inicio de cobro es requerida")
+    .optional(),
   hasCistern: z.boolean().default(false),
   floorsCount: z.coerce.number().int().positive().default(1),
   hasGarage: z.boolean().default(false),
@@ -57,6 +61,7 @@ export const residentEntitySchema = residentSchema.extend({
   communityId: z.string(),
   userId: z.string().nullable().optional(),
   monthlyFee: z.string(), // Viene de la BD como string decimal
+  billingStartDate: z.string(), // Viene de la BD como ISO string
   previousFee: z.string().nullable().optional(),
   lastFeeUpdate: z.string().nullable().optional(),
   feeUpdateReason: z.string().nullable().optional(),
@@ -91,6 +96,18 @@ export type UpdateResidentFormValues = z.infer<typeof updateResidentSchema>;
 export type Resident = z.infer<typeof residentEntitySchema>;
 export type UpdateMyProfileFormValues = z.infer<typeof updateMyProfileSchema>;
 export type ReportDeviceInput = z.infer<typeof reportDeviceSchema>;
+
+export interface UnpaidPeriod {
+  period: string;
+  isPaid: boolean;
+  amount: string;
+}
+
+export interface ResidentDetailResponse {
+  resident: Resident;
+  unpaidPeriods: UnpaidPeriod[];
+  totalDebt: string;
+}
 
 // Contratos de respuesta de API
 export interface ResidentsResponse {

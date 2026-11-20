@@ -11,12 +11,22 @@ import { Footer } from "@/components/layout/Footer";
 
 import "./globals.css";
 
-const interHeading = Inter({ subsets: ["latin"], variable: "--font-heading" });
+const interHeading = Inter({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-heading",
+  preload: false,
+});
 
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
+const outfit = Outfit({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
+});
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
+  weight: ["400", "500"],
   variable: "--font-mono",
   preload: false,
 });

@@ -2,7 +2,8 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getResidentsAction } from "@/actions/residents/getResidentsAction";
-import { Resident } from "@/schemas";
+import { getResidentByIdAction } from "@/actions/residents/getResidentByIdAction";
+import { Resident, ResidentDetailResponse } from "@/schemas";
 
 interface UseResidentsOptions {
   communityId?: string;
@@ -30,5 +31,22 @@ export function useResidents({
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchOnMount: false,
+  });
+}
+
+export function useResidentById(residentId?: string) {
+  return useQuery<ResidentDetailResponse, Error>({
+    queryKey: ["resident", residentId],
+    enabled: Boolean(residentId),
+    queryFn: async () => {
+      const res = await getResidentByIdAction(residentId!);
+      if (!res.success || !res.data) {
+        throw new Error(
+          res.error || "Error al obtener el detalle del residente",
+        );
+      }
+      return res.data;
+    },
+    staleTime: 0,
   });
 }

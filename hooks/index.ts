@@ -2,6 +2,8 @@ export * from "./useAnnouncements";
 export * from "./useCommunities";
 export * from "./useCommunityMap";
 export * from "./useDashboardMetrics";
+export * from "./useNotifications";
+export * from "./usePayments";
 export * from "./useResidentDashboard";
 export * from "./useResidents";
 export * from "./useSearch";

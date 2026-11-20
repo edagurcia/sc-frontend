@@ -1,12 +1,15 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { Loader2, AlertCircle } from "lucide-react";
+import { Resident } from "@/schemas";
 import { ResidentList } from "@/components/resident/ResidentsList";
+import { Modal } from "@/components/Modal";
+import { PaymentForm } from "@/components/payments/PaymentForm";
 import { useDashboardMetrics, useCommunityMap } from "@/hooks";
 import { getPeriodReportHtmlAction } from "@/actions/dashboard/";
-import { Metrics } from "./Metrics"; // <-- Importamos el nuevo componente
+import { Metrics } from "./Metrics";
 
 const CommunityMap = dynamic(
   () =>
@@ -33,6 +36,8 @@ export const CommunityDashboard = () => {
   } = useCommunityMap();
 
   const [isPending, startTransition] = useTransition();
+  const [selectedResidentForPayment, setSelectedResidentForPayment] =
+    useState<Resident | null>(null);
 
   const handleDownloadReport = () => {
     if (!metrics?.period) return;
@@ -74,7 +79,6 @@ export const CommunityDashboard = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Componente de Métricas Extraído */}
       <Metrics
         metrics={metrics}
         isPending={isPending}
@@ -82,7 +86,13 @@ export const CommunityDashboard = () => {
       />
 
       <div className="rounded-xl border border-border/60 bg-card p-5 shadow-2xs space-y-2">
-        <ResidentList onlyDebtors={true} period={metrics.period} />
+        <ResidentList
+          onlyDebtors={true}
+          period={metrics.period}
+          onGeneratePayment={(resident) =>
+            setSelectedResidentForPayment(resident)
+          }
+        />
       </div>
 
       {isLoadingMap ? (
@@ -100,6 +110,26 @@ export const CommunityDashboard = () => {
       ) : mapData ? (
         <CommunityMap data={mapData} />
       ) : null}
+
+      <Modal
+        isOpen={Boolean(selectedResidentForPayment)}
+        onClose={() => setSelectedResidentForPayment(null)}
+        title="Registrar Pago de Cuota"
+        subtitle={
+          selectedResidentForPayment
+            ? `Selecciona los períodos a cancelar para ${selectedResidentForPayment.fullName}`
+            : ""
+        }
+        className="max-w-xl"
+      >
+        {selectedResidentForPayment && (
+          <PaymentForm
+            resident={selectedResidentForPayment}
+            onSuccess={() => setSelectedResidentForPayment(null)}
+            onCancel={() => setSelectedResidentForPayment(null)}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

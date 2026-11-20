@@ -46,7 +46,7 @@ export const ResidentManagementContainer = () => {
   );
 
   const residentToEdit = residentDetailResponse?.success
-    ? residentDetailResponse.data
+    ? (residentDetailResponse.data?.resident ?? null)
     : null;
 
   // 1. Crear residente
