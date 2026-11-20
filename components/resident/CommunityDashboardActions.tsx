@@ -1,19 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { DollarSign, Eye } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { Resident } from "@/schemas";
 
 interface Props {
   resident: Resident;
   onGeneratePayment: (resident: Resident) => void;
-  onViewDetails: (resident: Resident) => void;
 }
 
 export const CommunityDashboardActions = ({
   resident,
   onGeneratePayment,
-  onViewDetails,
 }: Props) => {
   return (
     <div className="flex items-center justify-end gap-2">
@@ -26,15 +24,6 @@ export const CommunityDashboardActions = ({
       >
         <DollarSign className="h-3.5 w-3.5" />
         <span className="hidden md:inline">Cobrar</span>
-      </Button>
-      <Button
-        size="sm"
-        variant="ghost"
-        className="h-8 w-8 p-0"
-        onClick={() => onViewDetails(resident)}
-        title="Ver detalles"
-      >
-        <Eye className="h-4 w-4" />
       </Button>
     </div>
   );
