@@ -46,7 +46,7 @@ export const amountToWords = (
   const hundredsEs = [
     "",
     "ciento",
-    "dosocientos",
+    "doscientos",
     "trescientos",
     "cuatrocientos",
     "quinientos",
