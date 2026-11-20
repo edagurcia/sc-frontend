@@ -22,7 +22,6 @@ import { AdminCrudActions } from "./AdminCrudActions";
 interface ResidentListProps {
   variant?: "community" | "admin";
   onGeneratePayment?: (resident: Resident) => void;
-  onViewDetails?: (resident: Resident) => void;
   onEdit?: (resident: Resident) => void;
   onToggleStatus?: (resident: Resident) => void;
   onManageUser?: (resident: Resident) => void;
@@ -36,7 +35,6 @@ interface ResidentListProps {
 export const ResidentList = ({
   variant = "community",
   onGeneratePayment,
-  onViewDetails,
   onEdit,
   onToggleStatus,
   onManageUser,
@@ -170,7 +168,6 @@ export const ResidentList = ({
                     <CommunityDashboardActions
                       resident={resident}
                       onGeneratePayment={() => onGeneratePayment?.(resident)}
-                      onViewDetails={() => onViewDetails?.(resident)}
                     />
                   );
 
