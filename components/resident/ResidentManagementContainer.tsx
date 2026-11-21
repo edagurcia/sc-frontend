@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ResidentList } from "./ResidentsList";
 import { Modal } from "@/components/Modal";
+import { useAuthStore } from "@/stores";
 import {
   Resident,
   ResidentFormValues,
@@ -16,14 +18,17 @@ import { createResidentAction } from "@/actions/residents/createResidentAction";
 import { updateResidentAction } from "@/actions/residents/updateResidentAction";
 import { toggleResidentStatusAction } from "@/actions/residents/toggleResidentStatusAction";
 import { manageResidentUserAction } from "@/actions/residents/manageResidentUserAction";
+import { updateResidentLocationAction } from "@/actions/residents/updateResidentLocationAction";
 import { ResidentForm } from "./ResidentForm";
 import { ResidentUserAccessForm } from "./ResidentUserAccessForm";
 import { ResidentDevicesForm } from "./ResidentDevicesForm";
+import { ResidentLocationForm } from "./ResidentLocationForm";
 
-type ModalMode = "create" | "edit" | "toggle" | "user" | "devices";
+type ModalMode = "create" | "edit" | "toggle" | "user" | "devices" | "location";
 
 export const ResidentManagementContainer = () => {
   const queryClient = useQueryClient();
+  const community = useAuthStore((state) => state.community);
 
   const [isOpen, setIsOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("create");
@@ -34,8 +39,9 @@ export const ResidentManagementContainer = () => {
     useState<Resident | null>(null);
   const [selectedResidentDevices, setSelectedResidentDevices] =
     useState<Resident | null>(null);
+  const [selectedResidentForLocation, setSelectedResidentForLocation] =
+    useState<Resident | null>(null);
 
-  // Query individual para obtener los datos frescos del residente al editar
   const { data: residentDetailResponse, isLoading: isLoadingDetail } = useQuery(
     {
       queryKey: ["resident", selectedId],
@@ -49,94 +55,7 @@ export const ResidentManagementContainer = () => {
     ? (residentDetailResponse.data?.resident ?? null)
     : null;
 
-  // 1. Crear residente
-  const handleCreate = async (values: ResidentFormValues) => {
-    const result = await createResidentAction(values);
-    if (result.success) {
-      await queryClient.invalidateQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      await queryClient.refetchQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      setIsOpen(false);
-    } else {
-      console.error(result.error);
-    }
-  };
-
-  // 2. Actualizar residente
-  const handleUpdate = async (values: UpdateResidentFormValues) => {
-    if (!selectedId) return;
-    const result = await updateResidentAction(selectedId, values);
-    if (result.success) {
-      await queryClient.invalidateQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      await queryClient.refetchQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      setIsOpen(false);
-      setSelectedId(null);
-    } else {
-      console.error(result.error);
-    }
-  };
-
-  // 3. Cambiar estado
-  const handleConfirmToggle = async () => {
-    if (!selectedResidentForToggle) return;
-    const newStatus = !selectedResidentForToggle.isActive;
-    const result = await toggleResidentStatusAction(
-      selectedResidentForToggle.id,
-      newStatus,
-    );
-    if (result.success) {
-      await queryClient.invalidateQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      await queryClient.refetchQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      setIsOpen(false);
-      setSelectedResidentForToggle(null);
-    } else {
-      console.error(result.error);
-    }
-  };
-
-  // 4. Crear o Gestionar usuario vinculado por correo
-  const handleSaveUserPassword = async (
-    resident: Resident,
-    newPassword: string,
-  ) => {
-    const result = await manageResidentUserAction(resident, newPassword);
-
-    if (result.success) {
-      await queryClient.invalidateQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      await queryClient.refetchQueries({
-        queryKey: ["residents"],
-        exact: false,
-      });
-      setIsOpen(false);
-      setSelectedResidentForUser(null);
-    } else {
-      console.error(result.error);
-    }
-  };
-
-  // 5. Gestionar dispositivos vinculado al residente
-  const handleSaveDevices = async (resident: Resident) => {
-    setSelectedResidentDevices(resident);
+  const refreshResidents = async () => {
     await queryClient.invalidateQueries({
       queryKey: ["residents"],
       exact: false,
@@ -147,11 +66,94 @@ export const ResidentManagementContainer = () => {
     });
   };
 
-  // Aperturas de modal
+  const handleCreate = async (values: ResidentFormValues) => {
+    const result = await createResidentAction(values);
+    if (result.success) {
+      await refreshResidents();
+      setIsOpen(false);
+    } else {
+      console.error(result.error);
+    }
+  };
+
+  const handleUpdate = async (values: UpdateResidentFormValues) => {
+    if (!selectedId) return;
+    const result = await updateResidentAction(selectedId, values);
+    if (result.success) {
+      await refreshResidents();
+      setIsOpen(false);
+      setSelectedId(null);
+    } else {
+      console.error(result.error);
+    }
+  };
+
+  const handleConfirmToggle = async () => {
+    if (!selectedResidentForToggle) return;
+    const newStatus = !selectedResidentForToggle.isActive;
+    const result = await toggleResidentStatusAction(
+      selectedResidentForToggle.id,
+      newStatus,
+    );
+    if (result.success) {
+      await refreshResidents();
+      setIsOpen(false);
+      setSelectedResidentForToggle(null);
+    } else {
+      console.error(result.error);
+    }
+  };
+
+  const handleSaveUserPassword = async (
+    resident: Resident,
+    newPassword: string,
+  ) => {
+    const result = await manageResidentUserAction(resident, newPassword);
+
+    if (result.success) {
+      await refreshResidents();
+      setIsOpen(false);
+      setSelectedResidentForUser(null);
+    } else {
+      console.error(result.error);
+    }
+  };
+
+  const handleSaveDevices = async (resident: Resident) => {
+    setSelectedResidentDevices(resident);
+    await refreshResidents();
+  };
+
+  const handleSaveLocation = async (
+    latitude: number | null,
+    longitude: number | null,
+  ) => {
+    if (!selectedResidentForLocation) return;
+
+    const result = await updateResidentLocationAction(
+      selectedResidentForLocation.id,
+      latitude,
+      longitude,
+    );
+
+    if (!result.success) {
+      toast.error(result.error || "No se pudo actualizar la ubicación");
+      return;
+    }
+
+    toast.success(
+      result.message || "Ubicación geográfica actualizada correctamente",
+    );
+    await refreshResidents();
+    setIsOpen(false);
+    setSelectedResidentForLocation(null);
+  };
+
   const openCreateModal = () => {
     setSelectedId(null);
     setSelectedResidentForToggle(null);
     setSelectedResidentForUser(null);
+    setSelectedResidentForLocation(null);
     setModalMode("create");
     setIsOpen(true);
   };
@@ -180,12 +182,19 @@ export const ResidentManagementContainer = () => {
     setIsOpen(true);
   };
 
+  const openLocationModal = (resident: Resident) => {
+    setSelectedResidentForLocation(resident);
+    setModalMode("location");
+    setIsOpen(true);
+  };
+
   const getModalTitle = () => {
     if (modalMode === "create") return "Registrar Nuevo Residente";
     if (modalMode === "edit") return "Modificando datos de residente";
     if (modalMode === "user") return "Gestión de Usuario Asociado";
     if (modalMode === "toggle") return "Cambio de estado del usuario";
     if (modalMode === "devices") return "Dispositivos de acceso a la comunidad";
+    if (modalMode === "location") return "Ubicación geográfica de propiedad";
     return "Confirmar Cambio de Estado";
   };
 
@@ -195,6 +204,8 @@ export const ResidentManagementContainer = () => {
     if (modalMode === "edit") return "Actualiza los campos necesarios.";
     if (modalMode === "devices")
       return "Administra los dispositivos de seguridad del residente.";
+    if (modalMode === "location")
+      return "Selecciona dentro del polígono comunitario la posición de la vivienda.";
     if (modalMode === "user")
       return `Administrar cuenta de usuario para ${selectedResidentForUser?.fullName} (${selectedResidentForUser?.email || "Sin correo"})`;
     return `¿Estás seguro de cambiar el estado de ${selectedResidentForToggle?.fullName}?`;
@@ -215,6 +226,7 @@ export const ResidentManagementContainer = () => {
         onToggleStatus={openToggleModal}
         onManageUser={openUserModal}
         onManageDevices={openDevicesModal}
+        onEditLocation={openLocationModal}
       />
 
       <Modal
@@ -225,10 +237,17 @@ export const ResidentManagementContainer = () => {
           setSelectedResidentForToggle(null);
           setSelectedResidentForUser(null);
           setSelectedResidentDevices(null);
+          setSelectedResidentForLocation(null);
         }}
         title={getModalTitle()}
         subtitle={getModalSubtitle()}
-        className={modalMode === "toggle" ? "max-w-md" : "max-w-2xl"}
+        className={
+          modalMode === "location"
+            ? "max-w-4xl"
+            : modalMode === "toggle"
+              ? "max-w-md"
+              : "max-w-2xl"
+        }
       >
         {modalMode === "create" && (
           <ResidentForm
@@ -294,6 +313,19 @@ export const ResidentManagementContainer = () => {
             onCancel={() => {
               setIsOpen(false);
               setSelectedResidentDevices(null);
+            }}
+          />
+        )}
+
+        {modalMode === "location" && selectedResidentForLocation && (
+          <ResidentLocationForm
+            resident={selectedResidentForLocation}
+            polygonJson={community?.polygon}
+            communityName={community?.name}
+            onSave={handleSaveLocation}
+            onCancel={() => {
+              setIsOpen(false);
+              setSelectedResidentForLocation(null);
             }}
           />
         )}
