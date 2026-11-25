@@ -35,7 +35,7 @@ export const ResidentRow = ({ resident, actions }: ResidentRowProps) => {
         </div>
       </TableCell>
       <TableCell className="font-semibold text-foreground">
-        {formatCurrency(resident.monthlyFee)}
+        {formatCurrency(resident.monthlyFee ?? 0)}
       </TableCell>
       <TableCell className="text-center">
         <Badge

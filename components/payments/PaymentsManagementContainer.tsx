@@ -217,7 +217,7 @@ export const PaymentsManagementContainer = () => {
                               </span>
                               <span className="text-xs text-muted-foreground">
                                 Casa: {resident.houseNumber || "S/N"} • Cuota:{" "}
-                                {formatCurrency(resident.monthlyFee)}
+                                {formatCurrency(resident.monthlyFee ?? 0)}
                               </span>
                             </div>
                           </CommandItem>
