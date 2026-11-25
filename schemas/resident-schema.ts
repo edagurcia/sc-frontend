@@ -1,131 +1,81 @@
 import { z } from "zod";
+import {
+  requiredDniSchema,
+  requiredPhoneSchema,
+  optionalDniSchema,
+  optionalPhoneSchema,
+} from "./common-fields-schema";
 
-export const securityDeviceSchema = z.object({
-  id: z.string().optional(),
-  type: z.string().min(1, "El tipo es requerido"),
-  serial: z.string().min(1, "El número de serie es requerido"),
-  status: z.enum(["active", "inactive"]).default("active"),
-  issuedAt: z.string().min(1, "La fecha de emisión es requerida"),
+export const createResidentSchema = z.object({
+  fullName: z
+    .string()
+    .trim()
+    .min(2, "El nombre completo debe tener al menos 2 caracteres")
+    .max(120, "El nombre completo no puede exceder 120 caracteres"),
+  email: z
+    .string()
+    .trim()
+    .email("Ingresa un correo electrónico válido")
+    .max(150, "El correo no puede exceder 150 caracteres"),
+  dni: requiredDniSchema,
+  phone: requiredPhoneSchema,
+  houseNumber: z
+    .string()
+    .trim()
+    .min(1, "El número de casa es obligatorio")
+    .max(30, "El número de casa no puede exceder 30 caracteres"),
+  street: z
+    .string()
+    .trim()
+    .min(1, "La calle o bloque es obligatoria")
+    .max(120, "La calle o bloque no puede exceder 120 caracteres"),
+  isActive: z.boolean().optional(),
 });
 
-export const residentSchema = z.object({
-  dni: z
+export const updateResidentSchema = z.object({
+  fullName: z
     .string()
-    .regex(/^\d+$/, "El DNI solo debe contener números")
-    .max(13, "El DNI no puede tener más de 13 caracteres"),
-  fullName: z.string().min(3, "El nombre completo es requerido"),
-  email: z.string().email("Correo electrónico inválido"),
-  phone: z.string().min(8, "El teléfono es requerido"),
-  address: z.string().min(5, "La dirección es requerida"),
-  reference: z.string().min(3, "La referencia es requerida"),
-  houseNumber: z.string().min(1, "El número de casa es requerido"),
-  street: z.string().min(1, "La calle es requerida"),
-  avenue: z.string().min(1, "La avenida es requerida"),
-  tenureType: z.string().min(1, "El tipo de tenencia es requerido"),
-
-  // Campos de georreferenciación opcionales para el mapa
-  latitude: z.coerce.number().optional().nullable(),
-  longitude: z.coerce.number().optional().nullable(),
-
-  securityDevices: z.array(securityDeviceSchema).optional(),
-  emergencyContact: z.string().optional(),
-  avatarUrl: z
-    .string()
-    .url("URL de avatar inválida")
-    .optional()
-    .or(z.literal("")),
-
-  monthlyFee: z.coerce.number().positive("La cuota mensual debe ser mayor a 0"),
-  billingStartDate: z
-    .string()
-    .min(1, "La fecha de inicio de cobro es requerida")
+    .trim()
+    .min(2, "El nombre completo debe tener al menos 2 caracteres")
+    .max(120, "El nombre completo no puede exceder 120 caracteres")
     .optional(),
-  hasCistern: z.boolean().default(false),
-  floorsCount: z.coerce.number().int().positive().default(1),
-  hasGarage: z.boolean().default(false),
-  adultsCount: z.coerce.number().int().nonnegative().default(1),
-  minorsCount: z.coerce.number().int().nonnegative().default(0),
+  email: z
+    .string()
+    .trim()
+    .email("Ingresa un correo electrónico válido")
+    .max(150, "El correo no puede exceder 150 caracteres")
+    .optional(),
+  dni: optionalDniSchema,
+  phone: optionalPhoneSchema,
+  houseNumber: z
+    .string()
+    .trim()
+    .min(1, "El número de casa es obligatorio")
+    .max(30, "El número de casa no puede exceder 30 caracteres")
+    .optional(),
+  street: z
+    .string()
+    .trim()
+    .min(1, "La calle o bloque es obligatoria")
+    .max(120, "La calle o bloque no puede exceder 120 caracteres")
+    .optional(),
+  isActive: z.boolean().optional(),
 });
 
-// Estructura del usuario vinculado devuelto por el Left Join
-export const residentUserSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string(),
-  role: z.string(),
-  isActive: z.boolean(),
-});
+export type CreateResidentInput = z.infer<typeof createResidentSchema>;
+export type UpdateResidentInput = z.infer<typeof updateResidentSchema>;
 
-export const residentEntitySchema = residentSchema.extend({
-  id: z.string(),
-  communityId: z.string(),
-  userId: z.string().nullable().optional(),
-  monthlyFee: z.string(), // Viene de la BD como string decimal
-  billingStartDate: z.string(), // Viene de la BD como ISO string
-  previousFee: z.string().nullable().optional(),
-  lastFeeUpdate: z.string().nullable().optional(),
-  feeUpdateReason: z.string().nullable().optional(),
-  latitude: z.coerce.number().nullable().optional(),
-  longitude: z.coerce.number().nullable().optional(),
-  isActive: z.boolean(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
-  // Información opcional del usuario vinculado por correo
-  user: residentUserSchema.nullable().optional(),
-});
-
-export const updateMyProfileSchema = residentSchema
-  .pick({
-    phone: true,
-    email: true,
-    emergencyContact: true,
-    avatarUrl: true,
-  })
-  .partial();
-
-export const reportDeviceSchema = z.object({
-  deviceId: z.string().min(1, "El ID del dispositivo es requerido"),
-  newStatus: z.enum(["lost", "damaged"]),
-});
-
-// Tipos inferidos desde Zod (Única fuente de verdad)
-export type SecurityDevice = z.infer<typeof securityDeviceSchema>;
-export type ResidentFormValues = z.infer<typeof residentSchema>;
-export const updateResidentSchema = residentSchema.partial();
-export type UpdateResidentFormValues = z.infer<typeof updateResidentSchema>;
-export type Resident = z.infer<typeof residentEntitySchema>;
-export type UpdateMyProfileFormValues = z.infer<typeof updateMyProfileSchema>;
-export type ReportDeviceInput = z.infer<typeof reportDeviceSchema>;
-
-export interface UnpaidPeriod {
-  period: string;
-  isPaid: boolean;
-  amount: string;
+export interface Resident {
+  id: string;
+  fullName: string;
+  email: string;
+  dni: string;
+  phone: string;
+  houseNumber: string;
+  street: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
 }
 
-export interface ResidentDetailResponse {
-  resident: Resident;
-  unpaidPeriods: UnpaidPeriod[];
-  totalDebt: string;
-}
-
-// Contratos de respuesta de API
-export interface ResidentsResponse {
-  residents: Resident[];
-  period?: string;
-  totalDebtors?: number;
-}
-
-export interface ResidentResponse {
-  message: string;
-  resident: Resident;
-}
-
-export interface ToggleResidentStatusResponse {
-  message: string;
-  resident: {
-    id: string;
-    isActive: boolean;
-    updatedAt: string;
-  };
-}
+export type ResidentResponse = Resident;

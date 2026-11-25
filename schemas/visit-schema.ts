@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalDniSchema } from "./common-fields-schema";
 
 export const visitsSchema = z
   .object({
@@ -14,12 +15,7 @@ export const visitsSchema = z
       .max(120, "El nombre de la empresa no puede exceder 120 caracteres")
       .optional()
       .or(z.literal("")),
-    identification: z
-      .string()
-      .trim()
-      .max(40, "El DNI/identificación no puede exceder 40 caracteres")
-      .optional()
-      .or(z.literal("")),
+    identification: optionalDniSchema,
     vehiclePlate: z
       .string()
       .trim()
@@ -55,11 +51,7 @@ export const updateVisitSchema = z.object({
     .trim()
     .max(120, "El nombre de la empresa no puede exceder 120 caracteres")
     .optional(),
-  identification: z
-    .string()
-    .trim()
-    .max(40, "El DNI/identificación no puede exceder 40 caracteres")
-    .optional(),
+  identification: optionalDniSchema,
   vehiclePlate: z
     .string()
     .trim()

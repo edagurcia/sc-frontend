@@ -10,6 +10,12 @@ import {
   VisitFormValues,
   VisitResponse,
 } from "@/schemas/visit-schema";
+import {
+  DNI_LENGTH,
+  handleDigitsChange,
+  handleDigitsKeyDown,
+  handleDigitsPaste,
+} from "@/utils/dni-phone-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,11 +111,44 @@ export const VisitForm = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="identification">DNI / Identificación</Label>
-          <Input
-            id="identification"
-            placeholder="Ej. 0801-1990-12345"
-            {...register("identification")}
+          <Controller
+            name="identification"
+            control={control}
+            render={({ field }) => (
+              <Input
+                id="identification"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={DNI_LENGTH}
+                placeholder="Ej. 0801199012345"
+                value={field.value ?? ""}
+                onKeyDown={handleDigitsKeyDown}
+                onPaste={(e) =>
+                  handleDigitsPaste(
+                    e,
+                    (clean) => field.onChange(clean),
+                    DNI_LENGTH,
+                  )
+                }
+                onChange={(e) =>
+                  handleDigitsChange(
+                    e,
+                    (clean) => field.onChange(clean),
+                    DNI_LENGTH,
+                  )
+                }
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+              />
+            )}
           />
+          {errors.identification && (
+            <span className="text-xs text-destructive">
+              {String(errors.identification.message)}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -119,6 +158,11 @@ export const VisitForm = ({
             placeholder="Ej. HAK-4821"
             {...register("vehiclePlate")}
           />
+          {errors.vehiclePlate && (
+            <span className="text-xs text-destructive">
+              {String(errors.vehiclePlate.message)}
+            </span>
+          )}
         </div>
       </div>
 
@@ -130,6 +174,11 @@ export const VisitForm = ({
           placeholder="Instrucciones o detalles adicionales de la visita..."
           {...register("notes")}
         />
+        {errors.notes && (
+          <span className="text-xs text-destructive">
+            {String(errors.notes.message)}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-2 pt-1">

@@ -4,36 +4,24 @@ import { useEffect } from "react";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Save, X } from "lucide-react";
-import { residentSchema, ResidentFormValues } from "@/schemas";
-import { Resident } from "@/schemas";
+import { z } from "zod";
+import { createResidentSchema, CreateResidentInput, Resident } from "@/schemas";
+import {
+  DNI_LENGTH,
+  PHONE_LENGTH,
+  handleDigitsChange,
+  handleDigitsKeyDown,
+  handleDigitsPaste,
+} from "@/utils/dni-phone-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { z } from "zod";
 
 interface ResidentFormProps {
   initialData?: Resident | null;
-  onSubmit: (values: ResidentFormValues) => Promise<void>;
+  onSubmit: (values: CreateResidentInput) => Promise<void>;
   onCancel: () => void;
 }
-
-const toDateInputValue = (dateInput?: string | Date | null): string => {
-  if (!dateInput) {
-    return new Date().toISOString().split("T")[0];
-  }
-  const parsed = new Date(dateInput);
-  if (Number.isNaN(parsed.getTime())) {
-    return new Date().toISOString().split("T")[0];
-  }
-  return parsed.toISOString().split("T")[0];
-};
 
 export const ResidentForm = ({
   initialData,
@@ -43,105 +31,51 @@ export const ResidentForm = ({
   const {
     register,
     handleSubmit,
-    setValue,
     control,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<
-    z.input<typeof residentSchema>,
+    z.input<typeof createResidentSchema>,
     Record<string, unknown>,
-    ResidentFormValues
+    CreateResidentInput
   >({
-    resolver: zodResolver(residentSchema),
+    resolver: zodResolver(createResidentSchema),
     defaultValues: {
-      dni: "",
       fullName: "",
       email: "",
+      dni: "",
       phone: "",
-      address: "",
-      reference: "",
       houseNumber: "",
       street: "",
-      avenue: "",
-      tenureType: "Propia",
-      emergencyContact: "",
-      avatarUrl: "",
-      monthlyFee: 500,
-      billingStartDate: toDateInputValue(),
-      hasCistern: false,
-      floorsCount: 1,
-      hasGarage: false,
-      adultsCount: 1,
-      minorsCount: 0,
-      securityDevices: [],
+      isActive: true,
     },
   });
 
   useEffect(() => {
     if (initialData) {
       reset({
-        dni: initialData.dni ?? "",
         fullName: initialData.fullName ?? "",
         email: initialData.email ?? "",
+        dni: initialData.dni ?? "",
         phone: initialData.phone ?? "",
-        address: initialData.address ?? "",
-        reference: initialData.reference ?? "",
         houseNumber: initialData.houseNumber ?? "",
         street: initialData.street ?? "",
-        avenue: initialData.avenue ?? "",
-        tenureType: initialData.tenureType ?? "Propia",
-        emergencyContact: initialData.emergencyContact ?? "",
-        avatarUrl: initialData.avatarUrl ?? "",
-        monthlyFee: initialData.monthlyFee
-          ? Number(initialData.monthlyFee)
-          : 500,
-        billingStartDate: toDateInputValue(initialData.billingStartDate),
-        hasCistern: Boolean(initialData.hasCistern),
-        floorsCount: initialData.floorsCount
-          ? Number(initialData.floorsCount)
-          : 1,
-        hasGarage: Boolean(initialData.hasGarage),
-        adultsCount: initialData.adultsCount
-          ? Number(initialData.adultsCount)
-          : 1,
-        minorsCount: initialData.minorsCount
-          ? Number(initialData.minorsCount)
-          : 0,
-        securityDevices: (initialData.securityDevices ?? []).map((device) => ({
-          id: device.id,
-          type: device.type,
-          serial: device.serial,
-          status: device.status === "inactive" ? "inactive" : "active",
-          issuedAt: device.issuedAt,
-        })),
+        isActive: initialData.isActive ?? true,
       });
     } else {
       reset({
-        dni: "",
         fullName: "",
         email: "",
+        dni: "",
         phone: "",
-        address: "",
-        reference: "",
         houseNumber: "",
         street: "",
-        avenue: "",
-        tenureType: "Propia",
-        emergencyContact: "",
-        avatarUrl: "",
-        monthlyFee: 500,
-        billingStartDate: toDateInputValue(),
-        hasCistern: false,
-        floorsCount: 1,
-        hasGarage: false,
-        adultsCount: 1,
-        minorsCount: 0,
-        securityDevices: [],
+        isActive: true,
       });
     }
   }, [initialData, reset]);
 
-  const handleFormSubmit: SubmitHandler<ResidentFormValues> = async (data) => {
+  const handleFormSubmit: SubmitHandler<CreateResidentInput> = async (data) => {
     await onSubmit(data);
   };
 
@@ -150,28 +84,7 @@ export const ResidentForm = ({
       onSubmit={handleSubmit(handleFormSubmit)}
       className="flex flex-col gap-4 max-h-[75vh] overflow-y-auto pr-2"
     >
-      {/* Datos Personales */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="dni">DNI (Solo números, máx. 13) *</Label>
-          <Input
-            id="dni"
-            maxLength={13}
-            placeholder="0801199012345"
-            {...register("dni", {
-              onChange: (e) => {
-                const onlyNums = e.target.value.replace(/\D/g, "");
-                setValue("dni", onlyNums);
-              },
-            })}
-          />
-          {errors.dni && (
-            <span className="text-xs text-destructive">
-              {errors.dni.message}
-            </span>
-          )}
-        </div>
-
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="fullName">Nombre Completo *</Label>
           <Input
@@ -181,14 +94,11 @@ export const ResidentForm = ({
           />
           {errors.fullName && (
             <span className="text-xs text-destructive">
-              {errors.fullName.message}
+              {String(errors.fullName.message)}
             </span>
           )}
         </div>
-      </div>
 
-      {/* Contacto */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="email">Correo Electrónico *</Label>
           <Input
@@ -199,24 +109,99 @@ export const ResidentForm = ({
           />
           {errors.email && (
             <span className="text-xs text-destructive">
-              {errors.email.message}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="phone">Teléfono *</Label>
-          <Input id="phone" placeholder="95556810" {...register("phone")} />
-          {errors.phone && (
-            <span className="text-xs text-destructive">
-              {errors.phone.message}
+              {String(errors.email.message)}
             </span>
           )}
         </div>
       </div>
 
-      {/* Ubicación y Domicilio */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="dni">DNI / Identidad (13 números) *</Label>
+          <Controller
+            name="dni"
+            control={control}
+            render={({ field }) => (
+              <Input
+                id="dni"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={DNI_LENGTH}
+                placeholder="0801199012345"
+                value={field.value ?? ""}
+                onKeyDown={handleDigitsKeyDown}
+                onPaste={(e) =>
+                  handleDigitsPaste(
+                    e,
+                    (clean) => field.onChange(clean),
+                    DNI_LENGTH,
+                  )
+                }
+                onChange={(e) =>
+                  handleDigitsChange(
+                    e,
+                    (clean) => field.onChange(clean),
+                    DNI_LENGTH,
+                  )
+                }
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+              />
+            )}
+          />
+          {errors.dni && (
+            <span className="text-xs text-destructive">
+              {String(errors.dni.message)}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="phone">Teléfono (8 números) *</Label>
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field }) => (
+              <Input
+                id="phone"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={PHONE_LENGTH}
+                placeholder="95556810"
+                value={field.value ?? ""}
+                onKeyDown={handleDigitsKeyDown}
+                onPaste={(e) =>
+                  handleDigitsPaste(
+                    e,
+                    (clean) => field.onChange(clean),
+                    PHONE_LENGTH,
+                  )
+                }
+                onChange={(e) =>
+                  handleDigitsChange(
+                    e,
+                    (clean) => field.onChange(clean),
+                    PHONE_LENGTH,
+                  )
+                }
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
+              />
+            )}
+          />
+          {errors.phone && (
+            <span className="text-xs text-destructive">
+              {String(errors.phone.message)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="houseNumber">N° Casa *</Label>
           <Input
@@ -226,13 +211,13 @@ export const ResidentForm = ({
           />
           {errors.houseNumber && (
             <span className="text-xs text-destructive">
-              {errors.houseNumber.message}
+              {String(errors.houseNumber.message)}
             </span>
           )}
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="street">Calle *</Label>
+          <Label htmlFor="street">Calle o Bloque *</Label>
           <Input
             id="street"
             placeholder="Calle Principal"
@@ -240,174 +225,31 @@ export const ResidentForm = ({
           />
           {errors.street && (
             <span className="text-xs text-destructive">
-              {errors.street.message}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="avenue">Avenida *</Label>
-          <Input
-            id="avenue"
-            placeholder="Avenida Central"
-            {...register("avenue")}
-          />
-          {errors.avenue && (
-            <span className="text-xs text-destructive">
-              {errors.avenue.message}
+              {String(errors.street.message)}
             </span>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="address">Dirección / Colonia *</Label>
-          <Input
-            id="address"
-            placeholder="Colonia Residencial"
-            {...register("address")}
-          />
-          {errors.address && (
-            <span className="text-xs text-destructive">
-              {errors.address.message}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="reference">Referencia *</Label>
-          <Input
-            id="reference"
-            placeholder="Cerca del parque central"
-            {...register("reference")}
-          />
-          {errors.reference && (
-            <span className="text-xs text-destructive">
-              {errors.reference.message}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Tenencia (Shadcn Select), Cuota e Inicio de Cobro */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="tenureType">Tipo de Tenencia *</Label>
-          <Controller
-            name="tenureType"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value ?? ""}>
-                <SelectTrigger id="tenureType" className="w-full">
-                  <SelectValue placeholder="Seleccione el tipo de tenencia" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Propia">Propia</SelectItem>
-                  <SelectItem value="Alquiler">Alquiler</SelectItem>
-                  <SelectItem value="Negocio">Negocio</SelectItem>
-                  <SelectItem value="Familiar">Familiar</SelectItem>
-                  <SelectItem value="Prestado">Prestado</SelectItem>
-                  <SelectItem value="Cuidando">Cuidando</SelectItem>
-                  <SelectItem value="Otro">Otro</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.tenureType && (
-            <span className="text-xs text-destructive">
-              {errors.tenureType.message}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="monthlyFee">Cuota Mensual *</Label>
-          <Input
-            id="monthlyFee"
-            type="number"
-            step="0.01"
-            placeholder="500"
-            {...register("monthlyFee", { valueAsNumber: true })}
-          />
-          {errors.monthlyFee && (
-            <span className="text-xs text-destructive">
-              {errors.monthlyFee.message}
-            </span>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="billingStartDate">Fecha Inicio de Cobro *</Label>
-          <Input
-            id="billingStartDate"
-            type="date"
-            {...register("billingStartDate")}
-          />
-          {errors.billingStartDate && (
-            <span className="text-xs text-destructive">
-              {errors.billingStartDate.message}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Características */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="floorsCount">Pisos</Label>
-          <Input
-            id="floorsCount"
-            type="number"
-            {...register("floorsCount", { valueAsNumber: true })}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="adultsCount">Adultos</Label>
-          <Input
-            id="adultsCount"
-            type="number"
-            {...register("adultsCount", { valueAsNumber: true })}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="minorsCount">Menores</Label>
-          <Input
-            id="minorsCount"
-            type="number"
-            {...register("minorsCount", { valueAsNumber: true })}
-          />
-        </div>
-        <div className="flex flex-col justify-end pb-2 gap-2">
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
+      <div className="flex items-center gap-2 pt-1">
+        <Controller
+          name="isActive"
+          control={control}
+          render={({ field }) => (
             <input
               type="checkbox"
-              {...register("hasCistern")}
-              className="rounded border-input"
+              id="isActive"
+              checked={Boolean(field.value)}
+              onChange={field.onChange}
+              className="rounded border-input h-4 w-4 cursor-pointer"
             />
-            Cisterna
-          </label>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              {...register("hasGarage")}
-              className="rounded border-input"
-            />
-            Garaje
-          </label>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="emergencyContact">Contacto de Emergencia</Label>
-        <Input
-          id="emergencyContact"
-          placeholder="99926409 (Nombre - Parentesco)"
-          {...register("emergencyContact")}
+          )}
         />
+        <Label htmlFor="isActive" className="cursor-pointer font-normal">
+          Residente activo
+        </Label>
       </div>
 
-      {/* Botones */}
       <div className="flex items-center justify-end gap-2 pt-4 border-t border-border/60 mt-2">
         <Button
           type="button"

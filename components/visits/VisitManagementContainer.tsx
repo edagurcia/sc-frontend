@@ -146,6 +146,14 @@ export const VisitManagementContainer = () => {
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-border/60 pb-2">
+                  <span className="text-muted-foreground">
+                    DNI / Identificación:
+                  </span>
+                  <span className="font-mono font-medium">
+                    {activeDetail.identification || "—"}
+                  </span>
+                </div>
+                <div className="flex justify-between border-b border-border/60 pb-2">
                   <span className="text-muted-foreground">Placa:</span>
                   <span className="font-medium">
                     {activeDetail.vehiclePlate || "—"}
