@@ -8,3 +8,4 @@ export * from "./useResidentDashboard";
 export * from "./useResidents";
 export * from "./useSearch";
 export * from "./useSuperAdminMetrics";
+export * from "./useVisits";
