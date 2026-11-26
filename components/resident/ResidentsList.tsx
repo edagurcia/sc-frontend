@@ -25,6 +25,7 @@ interface ResidentListProps {
   onEdit?: (resident: Resident) => void;
   onToggleStatus?: (resident: Resident) => void;
   onManageUser?: (resident: Resident) => void;
+  onResetPassword?: (resident: Resident) => void;
   onManageDevices?: (resident: Resident) => void;
   onEditLocation?: (resident: Resident) => void;
   entityKey?: string;
@@ -39,6 +40,7 @@ export const ResidentList = ({
   onEdit,
   onToggleStatus,
   onManageUser,
+  onResetPassword,
   onManageDevices,
   onEditLocation,
   entityKey = "community-residents",
@@ -159,6 +161,11 @@ export const ResidentList = ({
                       onToggleStatus={() => onToggleStatus?.(resident)}
                       onManageUser={
                         onManageUser ? () => onManageUser(resident) : undefined
+                      }
+                      onResetPassword={
+                        onResetPassword
+                          ? () => onResetPassword(resident)
+                          : undefined
                       }
                       onManageDevices={
                         onManageDevices

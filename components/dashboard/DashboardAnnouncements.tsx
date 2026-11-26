@@ -5,8 +5,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Megaphone, Pin, Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuthStore } from "@/stores";
 
 export const DashboardAnnouncements = () => {
+  const user = useAuthStore((state) => state.user);
+  const role = user?.role;
+
+  if (role === "super_admin") return null;
+
   const { announcements, isLoading } = useAnnouncements({
     dashboardOnly: true,
     limit: 3,

@@ -4,4 +4,5 @@ export * from "./login-schema";
 export * from "./notification-schema";
 export * from "./payment-schema";
 export * from "./resident-schema";
+export * from "./user-schema";
 export * from "./visit-schema";

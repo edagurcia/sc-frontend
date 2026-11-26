@@ -12,6 +12,7 @@ import {
   UserPlus,
   AlertTriangle,
   Loader2,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +29,14 @@ import { Resident } from "@/schemas";
 interface ResidentUserAccessFormProps {
   resident: Resident;
   onSavePassword: (resident: Resident, password: string) => Promise<void>;
+  onOpenResetPassword?: (resident: Resident) => void;
   onCancel: () => void;
 }
 
 export const ResidentUserAccessForm = ({
   resident,
   onSavePassword,
+  onOpenResetPassword,
   onCancel,
 }: ResidentUserAccessFormProps) => {
   const [tempPassword, setTempPassword] = useState("");
@@ -42,8 +45,7 @@ export const ResidentUserAccessForm = ({
 
   const hasExistingUser = Boolean(resident.user?.id || resident.userId);
 
-  // Generador basado en las reglas de seguridad:
-  // mín. 8 caracteres, 1 mayúscula, 1 número, 1 carácter especial (!@#$%^&*)
+  // Garantiza al menos una mayúscula, un número y un carácter especial en 10 caracteres
   const generateSecurePassword = () => {
     const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const numberChars = "0123456789";
@@ -74,8 +76,9 @@ export const ResidentUserAccessForm = ({
     setTimeout(() => setCopied(false), 3000);
   };
 
+  // Bloquea la creación de usuario si el residente ya posee uno vinculado
   const handleSave = async () => {
-    if (!tempPassword) return;
+    if (!tempPassword || hasExistingUser) return;
     setIsSaving(true);
     try {
       await onSavePassword(resident, tempPassword);
@@ -86,7 +89,6 @@ export const ResidentUserAccessForm = ({
 
   return (
     <div className="space-y-4 pt-1">
-      {/* Tarjeta de datos por defecto del Residente */}
       <div className="rounded-lg border border-border/60 bg-muted/30 p-3.5 flex flex-col gap-2 text-xs">
         <div className="flex items-center justify-between">
           <span className="font-semibold text-sm text-foreground">
@@ -120,7 +122,6 @@ export const ResidentUserAccessForm = ({
         </div>
       </div>
 
-      {/* Tarjeta de generación de contraseña temporal */}
       <Card className="bg-card border-border/60 shadow-none">
         <CardHeader className="pb-3 px-4 pt-4">
           <div className="flex items-center gap-2.5">
@@ -129,9 +130,7 @@ export const ResidentUserAccessForm = ({
             </div>
             <div>
               <CardTitle className="text-sm font-semibold">
-                {hasExistingUser
-                  ? "Restablecer Contraseña Temporal"
-                  : "Crear Credenciales de Acceso"}
+                Crear Credenciales de Acceso
               </CardTitle>
               <CardDescription className="text-xs">
                 Se utilizará el nombre y correo del residente por defecto.
@@ -186,7 +185,6 @@ export const ResidentUserAccessForm = ({
             </p>
           </div>
 
-          {/* Nota explícita de envío y cambio obligatorio */}
           <div className="flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-300">
             <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
             <p className="leading-relaxed">
@@ -197,7 +195,6 @@ export const ResidentUserAccessForm = ({
             </p>
           </div>
 
-          {/* Botonera */}
           <div className="flex justify-end gap-2 pt-3 border-t border-border/60">
             <Button
               type="button"
@@ -209,10 +206,24 @@ export const ResidentUserAccessForm = ({
             >
               Cancelar
             </Button>
+
+            {hasExistingUser && onOpenResetPassword && (
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => onOpenResetPassword(resident)}
+                className="gap-1.5 text-xs h-9 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset Password
+              </Button>
+            )}
+
             <Button
               type="button"
               size="sm"
-              disabled={!tempPassword || isSaving}
+              disabled={!tempPassword || isSaving || hasExistingUser}
               onClick={handleSave}
               className="gap-1.5 text-xs h-9 cursor-pointer"
             >
@@ -224,9 +235,7 @@ export const ResidentUserAccessForm = ({
               ) : (
                 <>
                   <Save className="h-3.5 w-3.5" />
-                  {hasExistingUser
-                    ? "Actualizar Contraseña"
-                    : "Crear Usuario y Guardar"}
+                  Crear Usuario y Guardar
                 </>
               )}
             </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Edit, Power, MapPin, User, Cpu } from "lucide-react";
+import { Edit, Power, MapPin, User, Cpu, KeyRound } from "lucide-react";
 import { Resident } from "@/schemas";
 
 interface Props {
@@ -12,6 +12,7 @@ interface Props {
   onManageDevices?: (resident: Resident) => void;
   onEditLocation?: (resident: Resident) => void;
   onManageUser?: (resident: Resident) => void;
+  onResetPassword?: (resident: Resident) => void;
 }
 
 export const AdminCrudActions = ({
@@ -22,41 +23,58 @@ export const AdminCrudActions = ({
   onManageDevices,
   onEditLocation,
   onManageUser,
+  onResetPassword,
 }: Props) => {
-  // Verifica si ya cuenta con georreferenciación activa
   const hasLocation =
     resident.latitude !== null &&
     resident.latitude !== undefined &&
     resident.longitude !== null &&
     resident.longitude !== undefined;
 
-  // Verifica si el residente tiene un usuario vinculado
   const hasUser = Boolean(resident.user?.id || resident.userId);
+
+  const handleManageUser = () => {
+    if (hasUser) return;
+    onManageUser?.(resident);
+  };
+
+  const handleResetPassword = () => {
+    if (!hasUser) return;
+    if (onResetPassword) {
+      onResetPassword(resident);
+    } else {
+      console.log("[TEMP] Reset password desde botonera:", {
+        residentId: resident.id,
+        userId: resident.user?.id ?? resident.userId,
+      });
+    }
+  };
 
   return (
     <div className="flex items-center justify-end gap-1">
-      {/* Botón para generar / editar usuario */}
-      {allowUserCreation && (
+      {allowUserCreation && !hasUser && (
         <Button
           size="sm"
           variant="ghost"
-          className={`h-8 w-8 p-0 transition-colors ${
-            hasUser
-              ? "text-primary hover:bg-primary/10"
-              : "text-muted-foreground hover:bg-muted"
-          }`}
-          onClick={() => onManageUser?.(resident)}
-          title={
-            hasUser
-              ? `Usuario vinculado (${resident.user?.email || resident.email})`
-              : "Sin usuario (Clic para crear o vincular)"
-          }
+          className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted transition-colors cursor-pointer"
+          onClick={handleManageUser}
+          title="Sin usuario (Clic para crear o vincular)"
         >
           <User className="h-4 w-4" />
         </Button>
       )}
 
-      {/* Botón para gestionar dispositivos de seguridad */}
+      {allowUserCreation && hasUser && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 w-8 p-0 text-amber-500 hover:bg-amber-500/10 transition-colors cursor-pointer"
+          onClick={handleResetPassword}
+          title="Restablecer contraseña de usuario"
+        >
+          <KeyRound className="h-4 w-4" />
+        </Button>
+      )}
 
       <Button
         size="sm"
@@ -68,7 +86,6 @@ export const AdminCrudActions = ({
         <Cpu className="h-4 w-4" />
       </Button>
 
-      {/* Botón de georreferenciación (Verde si tiene geo, Rojo si no tiene) */}
       <Button
         size="sm"
         variant="ghost"
@@ -87,7 +104,6 @@ export const AdminCrudActions = ({
         <MapPin className="h-4 w-4" />
       </Button>
 
-      {/* Botón para editar residente */}
       <Button
         size="sm"
         variant="ghost"
@@ -98,7 +114,6 @@ export const AdminCrudActions = ({
         <Edit className="h-4 w-4" />
       </Button>
 
-      {/* Botón para activar/desactivar */}
       <Button
         size="sm"
         variant="ghost"
