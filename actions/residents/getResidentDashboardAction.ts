@@ -33,7 +33,7 @@ export async function getResidentDashboardAction(): Promise<{
   try {
     const response = await scFetch<
       ResidentDashboardResponse | { data?: ResidentDashboardResponse }
-    >("/api/v1/resident-dashboard/dashboard", {
+    >("/api/v1/resident/dashboard", {
       method: "GET",
       cache: "no-store",
     });

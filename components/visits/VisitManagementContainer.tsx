@@ -150,7 +150,9 @@ export const VisitManagementContainer = () => {
                     DNI / Identificación:
                   </span>
                   <span className="font-mono font-medium">
-                    {activeDetail.identification || "—"}
+                    {activeDetail.visitorDni ??
+                      activeDetail.identification ??
+                      "—"}
                   </span>
                 </div>
                 <div className="flex justify-between border-b border-border/60 pb-2">
@@ -170,7 +172,10 @@ export const VisitManagementContainer = () => {
                 <div className="flex justify-between border-b border-border/60 pb-2">
                   <span className="text-muted-foreground">Tipo:</span>
                   <span className="font-medium">
-                    {activeDetail.isFrequent ? "Frecuente" : "Casual"}
+                    {activeDetail.visitType === "frecuente" ||
+                    activeDetail.isFrequent
+                      ? "Frecuente"
+                      : "Casual"}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">

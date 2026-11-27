@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useResidentDashboard } from "@/hooks/useResidentDashboard";
 import { ResidentPaymentItem } from "@/actions/residents/getResidentDashboardAction";
+import { getResidentStatementPdfAction } from "@/actions/residents/getResidentStatementPdfAction";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -112,22 +113,16 @@ export const ResidentDashboard = () => {
     );
   }, [data?.paymentStatus, statusFilter]);
 
+  // ... dentro de ResidentDashboard:
   const handleDownloadStatementPdf = async () => {
     setIsDownloadingPdf(true);
     try {
-      const yearParam = data?.year ? `?year=${data.year}` : "";
-      const response = await fetch(
-        `/api/v1/resident/statement/pdf${yearParam}`,
-        {
-          method: "GET",
-        },
-      );
+      const res = await getResidentStatementPdfAction(data?.year);
 
-      if (!response.ok) {
-        throw new Error("No se pudo generar el estado de cuenta");
+      if (!res.success || !res.html) {
+        throw new Error(res.error || "No se pudo generar el estado de cuenta");
       }
 
-      const htmlContent = await response.text();
       const printWindow = window.open("", "_blank", "noopener,noreferrer");
 
       if (!printWindow) {
@@ -138,7 +133,7 @@ export const ResidentDashboard = () => {
       }
 
       printWindow.document.open();
-      printWindow.document.write(htmlContent);
+      printWindow.document.write(res.html);
       printWindow.document.close();
       printWindow.focus();
       setTimeout(() => {

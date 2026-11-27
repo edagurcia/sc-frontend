@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { scFetch } from "@/lib/scFetch";
-import { VisitFormValues, VisitResponse } from "@/schemas/visit-schema";
+import {
+  VisitFormValues,
+  VisitResponse,
+  normalizeVisit,
+} from "@/schemas/visit-schema";
 
 export async function createVisitorAction(values: VisitFormValues): Promise<{
   success: boolean;
@@ -24,7 +28,7 @@ export async function createVisitorAction(values: VisitFormValues): Promise<{
     return {
       success: true,
       message: response.message,
-      data: response.visitor,
+      data: normalizeVisit(response.visitor),
     };
   } catch (error) {
     console.error("Error al registrar visita:", error);

@@ -18,6 +18,14 @@ export const menuOptions: TMenu[] = [
     roles: ["super_admin", "community_admin", "guard", "resident"],
     isMenuOption: true,
   },
+  {
+    id: 3,
+    label: "Visitas",
+    href: "/visits",
+    icon: "UserCheck",
+    roles: ["super_admin", "community_admin", "resident"],
+    isMenuOption: true,
+  },
 
   // --- SUPER ADMIN ---
   {
@@ -70,14 +78,6 @@ export const menuOptions: TMenu[] = [
     roles: ["community_admin"],
     isMenuOption: true,
   },
-  {
-    id: 24,
-    label: "Control de Visitas",
-    href: "/visits",
-    icon: "ClipboardList",
-    roles: ["community_admin", "guard"],
-    isMenuOption: true,
-  },
 
   // --- RESIDENTE ---
   {
@@ -85,14 +85,6 @@ export const menuOptions: TMenu[] = [
     label: "Mis Pagos",
     href: "/my-payments",
     icon: "Wallet",
-    roles: ["resident"],
-    isMenuOption: true,
-  },
-  {
-    id: 31,
-    label: "Mis Visitas",
-    href: "/my-visits",
-    icon: "UserCheck",
     roles: ["resident"],
     isMenuOption: true,
   },

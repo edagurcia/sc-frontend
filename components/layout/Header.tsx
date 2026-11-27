@@ -47,7 +47,7 @@ export const Header = () => {
         </div>
 
         <div className="flex items-center gap-3 z-10">
-          <Notifications />
+          {isAuthenticated && <Notifications />}
 
           <ThemeToggle />
 

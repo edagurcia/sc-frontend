@@ -2,7 +2,8 @@ import { z } from "zod";
 
 export interface NotificationResponse {
   id: string;
-  userId: string;
+  communityId: string;
+  userId: string | null;
   title: string;
   message: string;
   type: string;
@@ -10,13 +11,30 @@ export interface NotificationResponse {
   createdAt: string;
 }
 
-export const notificationSchema = z.object({
-  targetType: z.enum(["community", "user"]),
-  communityId: z.string().optional(),
-  userId: z.string().optional(),
-  title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
-  message: z.string().min(5, "El mensaje debe tener al menos 5 caracteres"),
-  type: z.string().min(2, "Selecciona un tipo de notificación"),
-});
+export const notificationSchema = z
+  .object({
+    targetType: z.enum(["community", "user"]),
+    communityId: z.string().optional(),
+    userId: z.string().optional(),
+    title: z.string().min(3, "El título debe tener al menos 3 caracteres"),
+    message: z.string().min(5, "El mensaje debe tener al menos 5 caracteres"),
+    type: z.string().min(2, "Selecciona un tipo de notificación"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.targetType === "user" && !data.userId) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["userId"],
+        message: "Selecciona un usuario destino",
+      });
+    }
+    if (data.targetType === "community" && !data.communityId) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["communityId"],
+        message: "Selecciona una comunidad destino",
+      });
+    }
+  });
 
 export type NotificationFormValues = z.infer<typeof notificationSchema>;

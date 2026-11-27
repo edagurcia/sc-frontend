@@ -1,11 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { Resident } from "@/schemas";
-
-export interface ResidentProfileResponse {
-  resident: Resident;
-}
+import { Resident } from "@/schemas/resident-schema";
 
 export async function getMyProfileAction(): Promise<{
   success: boolean;
@@ -13,20 +9,16 @@ export async function getMyProfileAction(): Promise<{
   error?: string;
 }> {
   try {
-    const response = await scFetch<ResidentProfileResponse>(
-      "/api/v1/resident-profile/me",
+    const response = await scFetch<{ resident: Resident }>(
+      "/api/v1/resident/me",
       {
         method: "GET",
-        next: { revalidate: 60 },
+        cache: "no-store",
       },
     );
 
-    return {
-      success: true,
-      data: response.resident,
-    };
+    return { success: true, data: response.resident };
   } catch (error) {
-    console.error("Error al obtener el perfil del residente:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Error desconocido",

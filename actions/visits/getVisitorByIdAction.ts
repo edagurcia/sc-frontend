@@ -1,7 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { VisitResponse } from "@/schemas/visit-schema";
+import { VisitResponse, normalizeVisit } from "@/schemas/visit-schema";
 
 export async function getVisitorByIdAction(
   id: string,
@@ -15,7 +15,10 @@ export async function getVisitorByIdAction(
       },
     );
 
-    return { success: true, data: response.visitor };
+    return {
+      success: true,
+      data: normalizeVisit(response.visitor),
+    };
   } catch (error) {
     console.error("Error al obtener visita por ID:", error);
     return {

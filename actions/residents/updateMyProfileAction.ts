@@ -1,36 +1,33 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { scFetch } from "@/lib/scFetch";
-import {
-  Resident,
-  UpdateMyProfileFormValues,
-  ResidentResponse,
-} from "@/schemas";
+import { Resident, UpdateMyProfileFormValues } from "@/schemas/resident-schema";
 
 export async function updateMyResidentProfileAct(
-  input: UpdateMyProfileFormValues,
+  values: UpdateMyProfileFormValues,
 ): Promise<{
   success: boolean;
-  data?: Resident;
   message?: string;
+  data?: Resident;
   error?: string;
 }> {
   try {
-    const response = await scFetch<ResidentResponse>(
-      "/api/v1/resident-profile/me",
+    const response = await scFetch<{ message: string; data: Resident }>(
+      "/api/v1/resident/me",
       {
         method: "PUT",
-        body: JSON.stringify(input),
+        body: JSON.stringify(values),
       },
     );
 
+    revalidatePath("/dashboard/profile");
     return {
       success: true,
-      data: response.resident,
       message: response.message,
+      data: response.data,
     };
   } catch (error) {
-    console.error("Error al actualizar el perfil del residente:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Error desconocido",

@@ -6,6 +6,7 @@ export * from "./useDashboardMetrics";
 export * from "./useNotifications";
 export * from "./usePayments";
 export * from "./useResidentDashboard";
+export * from "./useResidentPayments";
 export * from "./useResidents";
 export * from "./useSearch";
 export * from "./useSuperAdminMetrics";

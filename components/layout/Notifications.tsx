@@ -12,6 +12,8 @@ import {
   Check,
   UserCheck,
   Loader2,
+  Users,
+  User,
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Button } from "@/components/ui/button";
@@ -166,6 +168,8 @@ export const Notifications = () => {
           ) : (
             notifications.map((notif) => {
               const badge = getBadgeConfig(notif.type);
+              const isCommunityWide = notif.userId === null;
+
               return (
                 <div
                   key={notif.id}
@@ -192,12 +196,26 @@ export const Notifications = () => {
                     <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
                       {notif.message}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                       <Badge
                         variant={badge.variant}
                         className={`text-[9px] px-1.5 py-0 h-4 border ${badge.className}`}
                       >
                         {badge.label}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-[9px] px-1.5 py-0 h-4 gap-1 text-muted-foreground"
+                      >
+                        {isCommunityWide ? (
+                          <>
+                            <Users className="h-2.5 w-2.5" /> Comunidad
+                          </>
+                        ) : (
+                          <>
+                            <User className="h-2.5 w-2.5" /> Personal
+                          </>
+                        )}
                       </Badge>
                       {!notif.isRead && (
                         <span className="h-1.5 w-1.5 rounded-full bg-primary" />
@@ -226,7 +244,11 @@ export const Notifications = () => {
                         disabled={isDeleting}
                         className="h-7 w-7 text-muted-foreground hover:text-destructive cursor-pointer"
                         onClick={(e) => handleDelete(notif.id, e)}
-                        title="Eliminar notificación leída"
+                        title={
+                          isCommunityWide
+                            ? "Ocultar de mi bandeja"
+                            : "Eliminar notificación leída"
+                        }
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

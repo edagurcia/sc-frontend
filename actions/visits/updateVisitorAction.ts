@@ -2,7 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { scFetch } from "@/lib/scFetch";
-import { VisitFormValues, VisitResponse } from "@/schemas/visit-schema";
+import {
+  VisitFormValues,
+  VisitResponse,
+  normalizeVisit,
+} from "@/schemas/visit-schema";
 
 export async function updateVisitorAction(
   id: string,
@@ -27,7 +31,7 @@ export async function updateVisitorAction(
     return {
       success: true,
       message: response.message,
-      data: response.visitor,
+      data: normalizeVisit(response.visitor),
     };
   } catch (error) {
     console.error("Error al actualizar visita:", error);

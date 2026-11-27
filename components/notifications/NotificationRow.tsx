@@ -8,6 +8,8 @@ import {
   ShieldAlert,
   UserCheck,
   Info,
+  Users,
+  User,
 } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +24,8 @@ export const NotificationRow = ({
   notification,
   actions,
 }: NotificationRowProps) => {
+  const isCommunityWide = notification.userId === null;
+
   const getTypeBadge = (type: string) => {
     switch (type) {
       case "payment":
@@ -66,11 +70,29 @@ export const NotificationRow = ({
   return (
     <TableRow className={notification.isRead ? "opacity-75" : ""}>
       <TableCell>
-        <div className="flex items-center gap-2">
-          {getTypeBadge(notification.type)}
-          <span className="font-medium text-foreground line-clamp-1">
-            {notification.title}
-          </span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            {getTypeBadge(notification.type)}
+            <span className="font-medium text-foreground line-clamp-1">
+              {notification.title}
+            </span>
+          </div>
+          <div>
+            <Badge
+              variant="outline"
+              className="gap-1 text-[10px] text-muted-foreground font-normal"
+            >
+              {isCommunityWide ? (
+                <>
+                  <Users className="h-2.5 w-2.5" /> Toda la comunidad
+                </>
+              ) : (
+                <>
+                  <User className="h-2.5 w-2.5" /> Usuario específico
+                </>
+              )}
+            </Badge>
+          </div>
         </div>
       </TableCell>
       <TableCell>

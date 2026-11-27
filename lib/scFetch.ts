@@ -25,5 +25,10 @@ export async function scFetch<T>(
     );
   }
 
-  return response.json();
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  return (await response.text()) as unknown as T;
 }

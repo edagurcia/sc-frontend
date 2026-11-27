@@ -26,6 +26,7 @@ export async function sendNotificationAction(
         }
       : {
           userId: values.userId,
+          ...(values.communityId ? { communityId: values.communityId } : {}),
           title: values.title,
           message: values.message,
           type: values.type,

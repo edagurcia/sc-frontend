@@ -60,10 +60,13 @@ export const VisitForm = ({
       reset({
         visitorName: initialData.visitorName ?? "",
         companyName: initialData.companyName ?? "",
-        identification: initialData.identification ?? "",
+        identification:
+          initialData.visitorDni ?? initialData.identification ?? "",
         vehiclePlate: initialData.vehiclePlate ?? "",
         notes: initialData.notes ?? "",
-        isFrequent: Boolean(initialData.isFrequent),
+        isFrequent:
+          initialData.visitType === "frecuente" ||
+          Boolean(initialData.isFrequent),
         isActive: initialData.isActive ?? true,
       });
     }

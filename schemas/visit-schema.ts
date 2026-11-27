@@ -76,10 +76,14 @@ export type ToggleVisitStatusValues = z.infer<typeof toggleVisitStatusSchema>;
 
 export interface Visit {
   id: string;
+  communityId?: string;
+  userId?: string;
   visitorName?: string | null;
   companyName?: string | null;
+  visitorDni?: string | null;
   identification?: string | null;
   vehiclePlate?: string | null;
+  visitType?: "frecuente" | "ocasional" | string;
   notes?: string | null;
   isFrequent?: boolean;
   accessCode: string;
@@ -97,3 +101,9 @@ export interface ActiveCommunityVisit extends Visit {
   street: string;
   phone: string;
 }
+
+export const normalizeVisit = (visit: VisitResponse): VisitResponse => ({
+  ...visit,
+  identification: visit.visitorDni ?? visit.identification ?? null,
+  isFrequent: visit.visitType === "frecuente" || Boolean(visit.isFrequent),
+});

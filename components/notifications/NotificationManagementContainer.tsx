@@ -11,12 +11,10 @@ import {
   NotificationFormValues,
 } from "@/schemas/notification-schema";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useAuthStore } from "@/stores";
 
 type ModalMode = "create" | "delete";
 
 export const NotificationManagementContainer = () => {
-  const community = useAuthStore((state) => state.community);
   const {
     notifications,
     sendNotification,
@@ -134,8 +132,9 @@ export const NotificationManagementContainer = () => {
         {modalMode === "delete" && selectedNotificationForDelete && (
           <div className="flex flex-col gap-4 pt-2">
             <p className="text-sm text-muted-foreground">
-              Esta acción eliminará permanentemente la notificación y no se
-              puede deshacer.
+              {selectedNotificationForDelete.userId === null
+                ? "Este es un aviso comunitario. Se ocultará de tu bandeja personal sin afectar a los demás residentes."
+                : "Esta acción eliminará permanentemente la notificación y no se puede deshacer."}
             </p>
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/60">
               <Button

@@ -29,6 +29,7 @@ export interface Resident {
   reference?: string | null;
   latitude?: number | string | null;
   longitude?: number | string | null;
+  billingStartDate?: string | Date;
   monthlyFee?: number | string | null;
   communityId?: string | null;
   userId?: string | null;

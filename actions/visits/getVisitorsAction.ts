@@ -1,7 +1,7 @@
 "use server";
 
 import { scFetch } from "@/lib/scFetch";
-import { VisitResponse } from "@/schemas/visit-schema";
+import { VisitResponse, normalizeVisit } from "@/schemas/visit-schema";
 
 export async function getVisitorsAction(): Promise<{
   success: boolean;
@@ -17,7 +17,10 @@ export async function getVisitorsAction(): Promise<{
       },
     );
 
-    return { success: true, data: response.visitors };
+    return {
+      success: true,
+      data: response.visitors.map(normalizeVisit),
+    };
   } catch (error) {
     console.error("Error al obtener visitas:", error);
     return {
