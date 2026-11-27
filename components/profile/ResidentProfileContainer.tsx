@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   AlertCircle,
@@ -10,9 +10,8 @@ import {
   Mail,
   ShieldCheck,
 } from "lucide-react";
-import { getMyProfileAction } from "@/actions/residents/getMyProfileAction";
-import { updateMyResidentProfileAct } from "@/actions/residents/updateMyProfileAction";
-import { Resident, UpdateMyProfileFormValues } from "@/schemas/resident-schema";
+import { useMyProfile, useUpdateMyProfile } from "@/hooks/useMyProfile";
+import { UpdateMyProfileFormValues } from "@/schemas/resident-schema";
 import { Modal } from "@/components/Modal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,34 +19,18 @@ import { ResidentProfileForm } from "./ResidentProfileForm";
 import { ResidentChangePasswordModal } from "./ResidentChangePasswordModal";
 
 export const ResidentProfileContainer = () => {
-  const [resident, setResident] = useState<Resident | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: resident, isLoading, error } = useMyProfile();
+  const { mutateAsync: updateProfile } = useUpdateMyProfile();
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
-  const loadProfile = async () => {
-    setIsLoading(true);
-    setError(null);
-    const res = await getMyProfileAction();
-    if (res.success && res.data) {
-      setResident(res.data);
-    } else {
-      setError(res.error || "No se pudo cargar el perfil");
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
   const handleUpdateProfile = async (values: UpdateMyProfileFormValues) => {
-    const res = await updateMyResidentProfileAct(values);
-    if (res.success) {
+    try {
+      const res = await updateProfile(values);
       toast.success(res.message || "Perfil actualizado exitosamente");
-      await loadProfile();
-    } else {
-      toast.error(res.error || "No se pudo actualizar el perfil");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "No se pudo actualizar el perfil",
+      );
     }
   };
 
@@ -63,7 +46,7 @@ export const ResidentProfileContainer = () => {
     return (
       <div className="rounded-xl border border-destructive/25 bg-destructive/10 p-4 text-destructive flex items-center gap-3 text-sm">
         <AlertCircle className="h-5 w-5 shrink-0" />
-        <span>{error || "Perfil no encontrado"}</span>
+        <span>{error?.message || "Perfil no encontrado"}</span>
       </div>
     );
   }

@@ -3,6 +3,7 @@ export * from "./useCommunities";
 export * from "./useCommunityMap";
 export * from "./useCommunityNames";
 export * from "./useDashboardMetrics";
+export * from "./useMyProfile";
 export * from "./useNotifications";
 export * from "./usePayments";
 export * from "./useResidentDashboard";
